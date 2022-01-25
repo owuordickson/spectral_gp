@@ -2,7 +2,6 @@ pkg_algorithms/
 __init__.py
 config.py
 main.py
-test.ipynb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
