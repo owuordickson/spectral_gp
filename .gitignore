@@ -3,6 +3,8 @@ __init__.py
 config.py
 main.py
 
+.idea/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
