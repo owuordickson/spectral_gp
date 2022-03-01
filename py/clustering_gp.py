@@ -33,6 +33,7 @@ determine which gradual items belong to the same group based on the similarity o
 the same cluster should have almost similar score vector.
 
 """
+import json
 
 import numpy as np
 import so4gp as sgp
@@ -44,69 +45,57 @@ from sklearn.cluster import KMeans
 MIN_SUPPORT = 0.5
 
 
-def construct_net_wins(d_gp):
-    # TO BE REMOVED
-    # Function for constructing GP pairs for Mx2 matrix
-    net_wins = []
-    attr_data = d_gp.data.T
-    n = d_gp.row_count
-    for col in d_gp.attr_cols:
-        col_data = np.array(attr_data[col], dtype=float)
-        incr = np.array((col, '+'), dtype='i, S1')
-        decr = np.array((col, '-'), dtype='i, S1')
-
-        bitmap_pos = np.where(col_data > col_data[:, np.newaxis], 1, np.where(col_data < col_data[:, np.newaxis], -1,
-                                                                              0))
-        # Remove invalid candidates
-        supp = float(np.sum(bitmap_pos[bitmap_pos == 1])) / float(n * (n - 1.0) / 2.0)
-        if supp >= d_gp.thd_supp:
-            # print(bitmap_pos)
-            row_sum = np.sum(bitmap_pos, axis=1)
-            row_sum[row_sum > 0] = 1
-            row_sum[row_sum < 0] = -1
-
-            net_wins.append(np.array([incr.tolist(), row_sum, supp], dtype=object))
-            net_wins.append(np.array([decr.tolist(), -row_sum, supp], dtype=object))
-    return np.array(net_wins)
-
-
-def clugps(f_path=None, min_sup=MIN_SUPPORT):
+def clugps(f_path=None, min_sup=MIN_SUPPORT, return_gps=False):
 
     # Create a DataGP object
     d_gp = sgp.DataGP(f_path, min_sup)
     """:type d_gp: DataGP"""
 
     # Generate net-win matrices
-    n_wins = construct_net_wins(d_gp)
+    d_gp.construct_net_wins()
+    n_wins = d_gp.net_wins.matrix
+    # print(n_wins)
 
-    # Perform single value distribution to determine the independent rows
+    # Spectral Clustering: perform SVD to determine the independent rows
     u, s, vt = np.linalg.svd(n_wins)
 
-    # Compute rank of net-wins matrix
+    # Spectral Clustering: compute rank of net-wins matrix
     r = np.linalg.matrix_rank(n_wins)
 
-    # Rank approximation
+    # Spectral Clustering: rank approximation
     n_wins_approx = u[:, :r] @ np.diag(s[:r]) @ vt[:r, :]
 
     # 1a. Clustering using KMeans
     kmeans = KMeans(n_clusters=r, random_state=0)
     predicted_clusters = kmeans.fit_predict(n_wins_approx)
     # 1b. Infer GPs
-    gps = infer_gps(predicted_clusters)
+    str_gps, gps = infer_gps(predicted_clusters, d_gp)
 
-    return gps
+    # Output
+    out = json.dumps({"Algorithm": "Clu-GRAD", "Patterns": str_gps})
+    """:type out: object"""
+    if return_gps:
+        return out, gps
+    else:
+        return out
 
 
-def infer_gps(clusters):
+def infer_gps(clusters, d_gp):
 
     patterns = []
-    idx_grp = [np.where(clusters == element)[0] for element in np.unique(clusters)]
+    str_patterns = []
 
+    n_wins = d_gp.net_wins
+    sups = n_wins.supports
+    n_matrix = n_wins.matrix
+    all_gis = n_wins.gradual_items
+
+    idx_grp = [np.where(clusters == element)[0] for element in np.unique(clusters)]
     for grp in idx_grp:
         if grp.size > 1:
             # Estimate support of clusters
-            supports = s[grp]
-            cluster_m = N[grp]
+            supports = sups[grp]
+            cluster_m = n_matrix[grp]
             m = cluster_m.shape[0]
             xor = np.ones(cluster_m.shape[1], dtype=bool)
             for i in range(m):
@@ -117,17 +106,19 @@ def infer_gps(clusters):
             est_sup = prob * np.min(supports)
 
             # Infer GPs from the clusters
-            gis = f[grp]
+            gis = all_gis[grp]
             gp = sgp.GP()
-            for obj in gis:
-                gi = sgp.GI(obj[0], obj[1].decode())
+            for gi in gis:
                 gp.add_gradual_item(gi)
             gp.set_support(est_sup)
-            # print(gp.print(ds.titles))
             patterns.append(gp)
-    return patterns
+            str_patterns.append(gp.print(d_gp.titles))
+    return str_patterns, patterns
 
 
 def compare_gps(clustered_gps, f_path, min_sup):
     real_gps = sgp.graank(f_path, min_sup)
     pass
+
+
+print(clugps('../data/DATASET.csv', min_sup=0.5))
