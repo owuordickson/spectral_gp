@@ -45,13 +45,7 @@ MIN_SUPPORT = 0.5
 
 
 def construct_net_wins(d_gp):
-    """
-    Construct a net-wins matrix from bitmaps corresponding to every gradual item.
-
-    :param d_gp: a DataGP that contains all the parameters required to extract gradual patterns (GPs)
-    :return: a net-wins matrix
-
-    """
+    # TO BE REMOVED
     # Function for constructing GP pairs for Mx2 matrix
     net_wins = []
     attr_data = d_gp.data.T
@@ -71,8 +65,8 @@ def construct_net_wins(d_gp):
             row_sum[row_sum > 0] = 1
             row_sum[row_sum < 0] = -1
 
-            net_wins.append([incr, row_sum, supp])
-            net_wins.append([decr, -row_sum, supp])
+            net_wins.append(np.array([incr.tolist(), row_sum, supp], dtype=object))
+            net_wins.append(np.array([decr.tolist(), -row_sum, supp], dtype=object))
     return np.array(net_wins)
 
 
@@ -87,7 +81,6 @@ def clugps(f_path=None, min_sup=MIN_SUPPORT):
 
     # Perform single value distribution to determine the independent rows
     u, s, vt = np.linalg.svd(n_wins)
-    Sd = np.diag(s)
 
     # Compute rank of net-wins matrix
     r = np.linalg.matrix_rank(n_wins)
@@ -95,15 +88,18 @@ def clugps(f_path=None, min_sup=MIN_SUPPORT):
     # Rank approximation
     n_wins_approx = u[:, :r] @ np.diag(s[:r]) @ vt[:r, :]
 
-    # Clustering using KMeans
+    # 1a. Clustering using KMeans
     kmeans = KMeans(n_clusters=r, random_state=0)
     predicted_clusters = kmeans.fit_predict(n_wins_approx)
+    # 1b. Infer GPs
+    gps = infer_gps(predicted_clusters)
 
-    return None
+    return gps
 
 
 def infer_gps(clusters):
 
+    patterns = []
     idx_grp = [np.where(clusters == element)[0] for element in np.unique(clusters)]
 
     for grp in idx_grp:
@@ -127,4 +123,11 @@ def infer_gps(clusters):
                 gi = sgp.GI(obj[0], obj[1].decode())
                 gp.add_gradual_item(gi)
             gp.set_support(est_sup)
-            print(gp.print(ds.titles))
+            # print(gp.print(ds.titles))
+            patterns.append(gp)
+    return patterns
+
+
+def compare_gps(clustered_gps, f_path, min_sup):
+    real_gps = sgp.graank(f_path, min_sup)
+    pass
