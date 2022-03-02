@@ -67,9 +67,9 @@ def clugps(f_path=None, min_sup=MIN_SUPPORT, algorithm=CLUSTER_ALGORITHM, return
     n_wins_approx = u[:, :r] @ np.diag(s[:r]) @ vt[:r, :]
 
     # 1a. Clustering using KMeans or MiniBatchKMeans or SpectralClustering or AgglomerativeClustering
-    predicted_clusters = predict_clusters(n_wins_approx, r, algorithm=algorithm)
+    y_pred = predict_clusters(n_wins_approx, r, algorithm=algorithm)
     # 1b. Infer GPs
-    str_gps, gps = infer_gps(predicted_clusters, d_gp)
+    str_gps, gps = infer_gps(y_pred, d_gp)
 
     # Output
     out = json.dumps({"Algorithm": "Clu-GRAD", "Patterns": str_gps})
@@ -81,7 +81,7 @@ def clugps(f_path=None, min_sup=MIN_SUPPORT, algorithm=CLUSTER_ALGORITHM, return
 
 
 def predict_clusters(nw_matrix, r, algorithm):
-    y_pred = None
+
     if algorithm == 'kmeans':
         kmeans = KMeans(n_clusters=r, random_state=0)
         y_pred = kmeans.fit_predict(nw_matrix)
@@ -94,6 +94,8 @@ def predict_clusters(nw_matrix, r, algorithm):
     elif algorithm == 'ac':
         model = AgglomerativeClustering(n_clusters=r)
         y_pred = model.fit_predict(nw_matrix)
+    else:
+        raise Exception("Error: unknown clustering algorithm selected!")
     return y_pred
 
 
@@ -136,7 +138,6 @@ def infer_gps(clusters, d_gp):
 
 def compare_gps(clustered_gps, f_path, min_sup):
     str_gps, real_gps = sgp.graank(f_path, min_sup, return_gps=True)
-    pass
 
 
 print(clugps('../data/DATASET.csv', min_sup=0.5))
