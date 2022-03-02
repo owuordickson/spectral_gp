@@ -40,12 +40,13 @@ import so4gp as sgp
 
 
 # Configuration Parameters
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, MiniBatchKMeans, SpectralClustering, AgglomerativeClustering
 
 MIN_SUPPORT = 0.5
+CLUSTER_ALGORITHM = 'kmeans'
 
 
-def clugps(f_path=None, min_sup=MIN_SUPPORT, return_gps=False):
+def clugps(f_path=None, min_sup=MIN_SUPPORT, algorithm=CLUSTER_ALGORITHM, return_gps=False):
 
     # Create a DataGP object
     d_gp = sgp.DataGP(f_path, min_sup)
@@ -65,8 +66,8 @@ def clugps(f_path=None, min_sup=MIN_SUPPORT, return_gps=False):
     # Spectral Clustering: rank approximation
     n_wins_approx = u[:, :r] @ np.diag(s[:r]) @ vt[:r, :]
 
-    # 1a. Clustering using KMeans
-    predicted_clusters = predict_clusters(n_wins_approx, r, algorithm='kmeans')
+    # 1a. Clustering using KMeans or MiniBatchKMeans or SpectralClustering or AgglomerativeClustering
+    predicted_clusters = predict_clusters(n_wins_approx, r, algorithm=algorithm)
     # 1b. Infer GPs
     str_gps, gps = infer_gps(predicted_clusters, d_gp)
 
@@ -79,12 +80,21 @@ def clugps(f_path=None, min_sup=MIN_SUPPORT, return_gps=False):
         return out
 
 
-def predict_clusters(nw_matrix, r, algorithm='kmeans'):
-    pred_clusters = None
+def predict_clusters(nw_matrix, r, algorithm):
+    y_pred = None
     if algorithm == 'kmeans':
         kmeans = KMeans(n_clusters=r, random_state=0)
-        pred_clusters = kmeans.fit_predict(nw_matrix)
-    return pred_clusters
+        y_pred = kmeans.fit_predict(nw_matrix)
+    elif algorithm == 'mbkmeans':
+        kmeans = MiniBatchKMeans(n_clusters=r)
+        y_pred = kmeans.fit_predict(nw_matrix)
+    elif algorithm == 'sc':
+        spectral_model = SpectralClustering(n_clusters=r)
+        y_pred = spectral_model.fit_predict(nw_matrix)
+    elif algorithm == 'ac':
+        model = AgglomerativeClustering(n_clusters=r)
+        y_pred = model.fit_predict(nw_matrix)
+    return y_pred
 
 
 def infer_gps(clusters, d_gp):
