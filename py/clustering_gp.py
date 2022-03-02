@@ -66,8 +66,7 @@ def clugps(f_path=None, min_sup=MIN_SUPPORT, return_gps=False):
     n_wins_approx = u[:, :r] @ np.diag(s[:r]) @ vt[:r, :]
 
     # 1a. Clustering using KMeans
-    kmeans = KMeans(n_clusters=r, random_state=0)
-    predicted_clusters = kmeans.fit_predict(n_wins_approx)
+    predicted_clusters = predict_clusters(n_wins_approx, r, algorithm='kmeans')
     # 1b. Infer GPs
     str_gps, gps = infer_gps(predicted_clusters, d_gp)
 
@@ -80,6 +79,14 @@ def clugps(f_path=None, min_sup=MIN_SUPPORT, return_gps=False):
         return out
 
 
+def predict_clusters(nw_matrix, r, algorithm='kmeans'):
+    pred_clusters = None
+    if algorithm == 'kmeans':
+        kmeans = KMeans(n_clusters=r, random_state=0)
+        pred_clusters = kmeans.fit_predict(nw_matrix)
+    return pred_clusters
+
+
 def infer_gps(clusters, d_gp):
 
     patterns = []
@@ -90,25 +97,26 @@ def infer_gps(clusters, d_gp):
     n_matrix = n_wins.matrix
     all_gis = n_wins.gradual_items
 
-    idx_grp = [np.where(clusters == element)[0] for element in np.unique(clusters)]
-    for grp in idx_grp:
-        if grp.size > 1:
-            # Estimate support of clusters
-            supports = sups[grp]
-            cluster_m = n_matrix[grp]
-            m = cluster_m.shape[0]
-            xor = np.ones(cluster_m.shape[1], dtype=bool)
+    lst_indices = [np.where(clusters == element)[0] for element in np.unique(clusters)]
+    for grp_idxs in lst_indices:
+        if grp_idxs.size > 1:
+            cluster = n_matrix[grp_idxs]
+            cluster_sups = sups[grp_idxs]
+            cluster_gis = all_gis[grp_idxs]
+
+            # Estimate support
+            m = cluster.shape[0]
+            xor = np.ones(cluster.shape[1], dtype=bool)
             for i in range(m):
                 if (i + 1) < m:
-                    temp = np.equal(cluster_m[i], cluster_m[i + 1])
+                    temp = np.equal(cluster[i], cluster[i + 1])
                     xor = np.logical_and(xor, temp)
-            prob = np.sum(xor) / cluster_m.shape[1]
-            est_sup = prob * np.min(supports)
+            prob = np.sum(xor) / cluster.shape[1]
+            est_sup = prob * np.min(cluster_sups)
 
             # Infer GPs from the clusters
-            gis = all_gis[grp]
             gp = sgp.GP()
-            for gi in gis:
+            for gi in cluster_gis:
                 gp.add_gradual_item(gi)
             gp.set_support(est_sup)
             patterns.append(gp)
@@ -117,7 +125,7 @@ def infer_gps(clusters, d_gp):
 
 
 def compare_gps(clustered_gps, f_path, min_sup):
-    real_gps = sgp.graank(f_path, min_sup)
+    str_gps, real_gps = sgp.graank(f_path, min_sup, return_gps=True)
     pass
 
 
