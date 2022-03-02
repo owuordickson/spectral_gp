@@ -72,7 +72,7 @@ def clugps(f_path=None, min_sup=MIN_SUPPORT, algorithm=CLUSTER_ALGORITHM, return
     str_gps, gps = infer_gps(y_pred, d_gp)
 
     # Compare inferred GPs with real GPs
-    compare_gps(gps, f_path, min_sup)
+    # compare_gps(gps, f_path, min_sup)
 
     # Output
     out = json.dumps({"Algorithm": "Clu-GRAD", "Patterns": str_gps})
@@ -136,7 +136,7 @@ def infer_gps(clusters, d_gp):
             gp.set_support(est_sup)
             patterns.append(gp)
             str_patterns.append(gp.print(d_gp.titles))
-
+            print(gp.print(d_gp.titles))
     return str_patterns, patterns
 
 
@@ -147,7 +147,7 @@ def compare_gps(clustered_gps, f_path, min_sup):
     for est_gp in clustered_gps:
         check, real_sup = sgp.contains_gp(est_gp, real_gps)
         if check:
-            same_gps.append([est_gp, real_sup])
+            same_gps.append([est_gp, est_gp.support, real_sup])
         else:
             miss_gps.append(est_gp)
     print(same_gps)
