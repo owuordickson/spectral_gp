@@ -147,14 +147,15 @@ def compare_gps(clustered_gps, f_path, min_sup):
     str_gps, real_gps = sgp.graank(f_path, min_sup, return_gps=True)
     for est_gp in clustered_gps:
         check, real_sup = sgp.contains_gp(est_gp, real_gps)
+        print([est_gp, est_gp.support, real_sup])
         if check:
             same_gps.append([est_gp, est_gp.support, real_sup])
         else:
             miss_gps.append(est_gp)
-    print(same_gps)
+    #print(same_gps)
     print(str_gps)
     return same_gps, miss_gps
 
 
 # print(clugps('../data/DATASET.csv', min_sup=0.5))
-print(clugps('../data/breast_cancer.csv', min_sup=0.5))
+print(clugps('../data/breast_cancer.csv', min_sup=0.6))
