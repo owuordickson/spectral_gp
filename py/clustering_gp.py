@@ -71,6 +71,9 @@ def clugps(f_path=None, min_sup=MIN_SUPPORT, algorithm=CLUSTER_ALGORITHM, return
     # 1b. Infer GPs
     str_gps, gps = infer_gps(y_pred, d_gp)
 
+    # Compare inferred GPs with real GPs
+    compare_gps(gps, f_path, min_sup)
+
     # Output
     out = json.dumps({"Algorithm": "Clu-GRAD", "Patterns": str_gps})
     """:type out: object"""
@@ -133,11 +136,17 @@ def infer_gps(clusters, d_gp):
             gp.set_support(est_sup)
             patterns.append(gp)
             str_patterns.append(gp.print(d_gp.titles))
+
     return str_patterns, patterns
 
 
 def compare_gps(clustered_gps, f_path, min_sup):
     str_gps, real_gps = sgp.graank(f_path, min_sup, return_gps=True)
+    for est_gp in clustered_gps:
+        check, real_sup = sgp.contains_gp(est_gp, real_gps)
+        if check:
+            print(est_gp.to_string())
 
 
-print(clugps('../data/DATASET.csv', min_sup=0.5))
+# print(clugps('../data/DATASET.csv', min_sup=0.5))
+print(clugps('../data/breast_cancer.csv', min_sup=0.5))
