@@ -34,20 +34,23 @@ the same cluster should have almost similar score vector.
 
 """
 import json
-
+import random
 import numpy as np
-import so4gp as sgp
+from ypstruct import structure
 
+import so4gp as sgp
 
 # Configuration Parameters
 from sklearn.cluster import KMeans, MiniBatchKMeans, SpectralClustering, AgglomerativeClustering
 
 MIN_SUPPORT = 0.5
+ERASURE_PROBABILITY = 0
 CLUSTER_ALGORITHM = 'kmeans'
+
+FILE = '../data/DATASET.csv'
 
 
 def clugps(f_path=None, min_sup=MIN_SUPPORT, algorithm=CLUSTER_ALGORITHM, return_gps=False):
-
     # Create a DataGP object
     d_gp = sgp.DataGP(f_path, min_sup)
     """:type d_gp: DataGP"""
@@ -84,8 +87,72 @@ def clugps(f_path=None, min_sup=MIN_SUPPORT, algorithm=CLUSTER_ALGORITHM, return
         return out
 
 
-def predict_clusters(nw_matrix, r, algorithm):
+def construct_pairs(d_gp, e=ERASURE_PROBABILITY):
 
+    # Sample pairs
+    n = d_gp.row_count
+    pair_count = int(n * (n - 1) * 0.5)
+    p = 1 - e
+    sampled_pairs = []
+    sample_idx = random.sample(range(pair_count), int(p*pair_count))
+    # sample_idx = np.random.randint(0, pair_count, int(p*pair_count))
+    # sample_idx = [0, 9, 6, 7, 3]  # For testing
+    # print(sample_idx)
+    # for i in range(pair_count):
+    for i in sample_idx:
+        # Retrieve group
+        g, i_g = get_group(n, i)
+        # print(str(i) + ' grp: ' + str(g))
+        pair = [(g-1), (g + i_g)]
+        sampled_pairs.append(pair)
+    # sampled_pairs = np.array(sampled_pairs)
+    # print(sampled_pairs)
+
+    # Compute gradual relation
+    attr_data = d_gp.data.T
+    pairs = []
+    lst_gis = []
+    for col in d_gp.attr_cols:
+        col_data = np.array(attr_data[col], dtype=float)
+        pr_pos = []
+        pr_neg = []
+        for pr in sampled_pairs:
+            if col_data[pr[0]] < col_data[pr[1]]:
+                pr_pos.append(pr)
+                pr_neg.append([pr[1], pr[0]])
+            elif col_data[pr[0]] > col_data[pr[1]]:
+                pr_neg.append(pr)
+                pr_pos.append([pr[1], pr[0]])
+        if len(pr_pos) > 0:
+            pairs.append(pr_pos)
+            lst_gis.append(sgp.GI(col, '+'))
+            # print(sgp.GI(col, '+').to_string() + str(pr_pos))
+
+            pairs.append(pr_neg)
+            lst_gis.append(sgp.GI(col, '-'))
+            # print(sgp.GI(col, '-').to_string() + str(pr_neg))
+    r_matrix = structure()
+    r_matrix.pairs = np.array(pairs, dtype=object)
+    r_matrix.gis = np.array(lst_gis)
+    return r_matrix
+
+
+def get_group(n, i):
+    # Retrieve group
+    lb = 0
+    k = 1
+    x = n - k
+    while k < n:
+        if i < x:
+            return k, (i-lb)
+        else:
+            lb = x
+            k += 1
+            x += (n - k)
+    return -1, -1
+
+
+def predict_clusters(nw_matrix, r, algorithm):
     if algorithm == 'kmeans':
         kmeans = KMeans(n_clusters=r, random_state=0)
         y_pred = kmeans.fit_predict(nw_matrix)
@@ -104,7 +171,6 @@ def predict_clusters(nw_matrix, r, algorithm):
 
 
 def infer_gps(clusters, d_gp):
-
     patterns = []
     str_patterns = []
 
@@ -152,10 +218,15 @@ def compare_gps(clustered_gps, f_path, min_sup):
             same_gps.append([est_gp, est_gp.support, real_sup])
         else:
             miss_gps.append(est_gp)
-    #print(same_gps)
+    # print(same_gps)
     print(str_gps)
     return same_gps, miss_gps
 
 
 # print(clugps('../data/DATASET.csv', min_sup=0.5))
-print(clugps('../data/breast_cancer.csv', min_sup=0.6))
+# print(clugps('../data/breast_cancer.csv', min_sup=0.6))
+
+dset = sgp.DataGP(FILE, MIN_SUPPORT)
+r_mat = construct_pairs(dset)
+print(r_mat.pairs)
+print(r_mat.gis)
