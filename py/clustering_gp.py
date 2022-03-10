@@ -167,6 +167,14 @@ def get_group(n, i):
     return -1, -1
 
 
+def construct_win_matrix(n, cluster_pairs):
+    w_vector = np.zeros(shape=(n,n), dtype=int)
+    for lst_pairs in cluster_pairs:
+        for pair in lst_pairs:
+            w_vector[pair[0]][pair[1]] += 1
+    return w_vector
+
+
 def predict_clusters(nw_matrix, r, algorithm):
     if algorithm == 'kmeans':
         kmeans = KMeans(n_clusters=r, random_state=0)
@@ -192,7 +200,7 @@ def infer_gps(clusters, d_gp, r_mat):
     # n_wins = r_mat.net_wins
     # sups = n_wins.supports
     n_matrix = r_mat.net_wins
-    # win_matrix = r_mat.wins
+    r_pairs = r_mat.pairs
     all_gis = r_mat.gradual_items
 
     # print(win_matrix)
@@ -201,12 +209,14 @@ def infer_gps(clusters, d_gp, r_mat):
     for grp_idxs in lst_indices:
         if grp_idxs.size > 1:
             cluster = n_matrix[grp_idxs]
-            # cluster_wins = win_matrix[grp_idxs]
+            cluster_pairs = r_pairs[grp_idxs]
             # cluster_sups = sups[grp_idxs]
             cluster_gis = all_gis[grp_idxs]
+            cluster_wins = construct_win_matrix(d_gp.row_count, cluster_pairs)
 
-            # print(cluster_wins)
-            # print("\n")
+            print(cluster_pairs)
+            print(cluster_wins)
+            print("\n")
 
             # Estimate support
             m = cluster.shape[0]
