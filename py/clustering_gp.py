@@ -113,7 +113,6 @@ def construct_pairs(d_gp, e):
     attr_data = d_gp.data.T
     pairs = []
     n_mat = []
-    w_mat = []
     lst_gis = []
     for col in d_gp.attr_cols:
         col_data = np.array(attr_data[col], dtype=float)
@@ -127,21 +126,18 @@ def construct_pairs(d_gp, e):
                 pr_neg.append(pr)
                 pr_pos.append([pr[1], pr[0]])
         if len(pr_pos) > 0:
-            n_vec, w_vec = construct_net_win(n, np.array(pr_pos))
+            n_vec = construct_net_win(n, np.array(pr_pos))
             n_mat.append(n_vec)
-            w_mat.append(w_vec)
             pairs.append(pr_pos)
             lst_gis.append(sgp.GI(col, '+'))
 
             n_mat.append(-n_vec)
-            w_mat.append(-w_vec)
             pairs.append(pr_neg)
             lst_gis.append(sgp.GI(col, '-'))
     r_matrix = structure()
     r_matrix.gradual_items = np.array(lst_gis)
     r_matrix.pairs = np.array(pairs, dtype=object)
     r_matrix.net_wins = np.array(n_mat)
-    r_matrix.wins = np.array(w_mat)
     return r_matrix
 
 
@@ -151,10 +147,9 @@ def construct_net_win(n, arr_pairs):
         x_i = np.count_nonzero(arr_pairs[:, 0] == i)
         x_j = np.count_nonzero(arr_pairs[:, 1] == i)
         s_vector[i] = (x_i-x_j)
-    d_vector = s_vector.copy()
     s_vector[s_vector > 0] = 1
     s_vector[s_vector < 0] = -1
-    return s_vector, d_vector
+    return s_vector
 
 
 def get_group(n, i):
@@ -197,17 +192,21 @@ def infer_gps(clusters, d_gp, r_mat):
     # n_wins = r_mat.net_wins
     # sups = n_wins.supports
     n_matrix = r_mat.net_wins
-    win_matrix = r_mat.wins
+    # win_matrix = r_mat.wins
     all_gis = r_mat.gradual_items
 
-    print(win_matrix)
+    # print(win_matrix)
 
     lst_indices = [np.where(clusters == element)[0] for element in np.unique(clusters)]
     for grp_idxs in lst_indices:
         if grp_idxs.size > 1:
             cluster = n_matrix[grp_idxs]
+            # cluster_wins = win_matrix[grp_idxs]
             # cluster_sups = sups[grp_idxs]
             cluster_gis = all_gis[grp_idxs]
+
+            # print(cluster_wins)
+            # print("\n")
 
             # Estimate support
             m = cluster.shape[0]
