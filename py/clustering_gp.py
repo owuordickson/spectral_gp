@@ -94,9 +94,8 @@ def construct_pairs(d_gp, e=ERASURE_PROBABILITY):
     pair_count = int(n * (n - 1) * 0.5)
     p = 1 - e
     sampled_pairs = []
-    sample_idx = random.sample(range(pair_count), int(p*pair_count))
-    # sample_idx = np.random.randint(0, pair_count, int(p*pair_count))
-    # sample_idx = [0, 9, 6, 7, 3]  # For testing
+    # sample_idx = random.sample(range(pair_count), int(p*pair_count))  # normal distribution
+    sample_idx = [0, 9, 6, 7, 3]  # For testing
     # print(sample_idx)
     # for i in range(pair_count):
     for i in sample_idx:
@@ -111,6 +110,8 @@ def construct_pairs(d_gp, e=ERASURE_PROBABILITY):
     # Compute gradual relation
     attr_data = d_gp.data.T
     pairs = []
+    n_mat = []
+    w_mat = []
     lst_gis = []
     for col in d_gp.attr_cols:
         col_data = np.array(attr_data[col], dtype=float)
@@ -124,17 +125,34 @@ def construct_pairs(d_gp, e=ERASURE_PROBABILITY):
                 pr_neg.append(pr)
                 pr_pos.append([pr[1], pr[0]])
         if len(pr_pos) > 0:
+            n_vec, w_vec = construct_net_win(n, np.array(pr_pos))
+            n_mat.append(n_vec)
+            w_mat.append(w_vec)
             pairs.append(pr_pos)
             lst_gis.append(sgp.GI(col, '+'))
-            # print(sgp.GI(col, '+').to_string() + str(pr_pos))
 
+            n_mat.append(-n_vec)
+            w_mat.append(-w_vec)
             pairs.append(pr_neg)
             lst_gis.append(sgp.GI(col, '-'))
-            # print(sgp.GI(col, '-').to_string() + str(pr_neg))
     r_matrix = structure()
+    r_matrix.gradual_items = np.array(lst_gis)
     r_matrix.pairs = np.array(pairs, dtype=object)
-    r_matrix.gis = np.array(lst_gis)
+    r_matrix.net_wins = np.array(n_mat)
+    r_matrix.wins = np.array(w_mat)
     return r_matrix
+
+
+def construct_net_win(n, arr_pairs):
+    s_vector = np.zeros(shape=(n,), dtype=int)
+    for i in range(n):
+        x_i = np.count_nonzero(arr_pairs[:, 0] == i)
+        x_j = np.count_nonzero(arr_pairs[:, 1] == i)
+        s_vector[i] = (x_i-x_j)
+    d_vector = s_vector.copy()
+    s_vector[s_vector > 0] = 1
+    s_vector[s_vector < 0] = -1
+    return s_vector, d_vector
 
 
 def get_group(n, i):
@@ -228,5 +246,7 @@ def compare_gps(clustered_gps, f_path, min_sup):
 
 dset = sgp.DataGP(FILE, MIN_SUPPORT)
 r_mat = construct_pairs(dset)
+print(r_mat.net_wins)
+print(r_mat.wins)
 print(r_mat.pairs)
-print(r_mat.gis)
+print(r_mat.gradual_items)
