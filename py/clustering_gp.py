@@ -214,6 +214,7 @@ def infer_gps(clusters, d_gp, r_mat):
 
     # n_wins = r_mat.net_wins
     # sups = n_wins.supports
+    n = d_gp.row_count
     n_matrix = r_mat.net_wins
     r_pairs = r_mat.pairs
     all_gis = r_mat.gradual_items
@@ -231,6 +232,11 @@ def infer_gps(clusters, d_gp, r_mat):
 
             # Estimate support
             score_vector = estimate_score_vector(cluster_wins)
+            count = 0
+            for i in range(n):
+                temp = (n-(i+1)) * score_vector[i]
+                count += temp
+            print(count)
             # m = cluster.shape[0]
             # xor = np.ones(cluster.shape[1], dtype=bool)
             # for i in range(m):
