@@ -56,8 +56,10 @@ def clugps(f_path=None, min_sup=MIN_SUPPORT, algorithm=CLUSTER_ALGORITHM, return
     """:type d_gp: DataGP"""
 
     # Generate net-win matrices
-    d_gp.construct_net_wins()
-    n_wins = d_gp.net_wins.matrix
+    # d_gp.construct_net_wins()
+    # n_wins = d_gp.net_wins.matrix
+    r_matrix = construct_pairs(d_gp, e=ERASURE_PROBABILITY)
+    n_wins = r_matrix.net_wins
     # print(n_wins)
 
     # Spectral Clustering: perform SVD to determine the independent rows
@@ -72,7 +74,7 @@ def clugps(f_path=None, min_sup=MIN_SUPPORT, algorithm=CLUSTER_ALGORITHM, return
     # 1a. Clustering using KMeans or MiniBatchKMeans or SpectralClustering or AgglomerativeClustering
     y_pred = predict_clusters(n_wins_approx, r, algorithm=algorithm)
     # 1b. Infer GPs
-    str_gps, gps = infer_gps(y_pred, d_gp)
+    str_gps, gps = infer_gps(y_pred, d_gp, r_matrix)
     # print(str_gps)
 
     # Compare inferred GPs with real GPs
@@ -87,7 +89,7 @@ def clugps(f_path=None, min_sup=MIN_SUPPORT, algorithm=CLUSTER_ALGORITHM, return
         return out
 
 
-def construct_pairs(d_gp, e=ERASURE_PROBABILITY):
+def construct_pairs(d_gp, e):
 
     # Sample pairs
     n = d_gp.row_count
@@ -188,20 +190,23 @@ def predict_clusters(nw_matrix, r, algorithm):
     return y_pred
 
 
-def infer_gps(clusters, d_gp):
+def infer_gps(clusters, d_gp, r_mat):
     patterns = []
     str_patterns = []
 
-    n_wins = d_gp.net_wins
-    sups = n_wins.supports
-    n_matrix = n_wins.matrix
-    all_gis = n_wins.gradual_items
+    # n_wins = r_mat.net_wins
+    # sups = n_wins.supports
+    n_matrix = r_mat.net_wins
+    win_matrix = r_mat.wins
+    all_gis = r_mat.gradual_items
+
+    print(win_matrix)
 
     lst_indices = [np.where(clusters == element)[0] for element in np.unique(clusters)]
     for grp_idxs in lst_indices:
         if grp_idxs.size > 1:
             cluster = n_matrix[grp_idxs]
-            cluster_sups = sups[grp_idxs]
+            # cluster_sups = sups[grp_idxs]
             cluster_gis = all_gis[grp_idxs]
 
             # Estimate support
@@ -212,7 +217,7 @@ def infer_gps(clusters, d_gp):
                     temp = np.equal(cluster[i], cluster[i + 1])
                     xor = np.logical_and(xor, temp)
             prob = np.sum(xor) / cluster.shape[1]
-            est_sup = prob * np.min(cluster_sups)
+            est_sup = prob #* np.min(cluster_sups)
 
             # Infer GPs from the clusters
             gp = sgp.GP()
@@ -231,7 +236,7 @@ def compare_gps(clustered_gps, f_path, min_sup):
     str_gps, real_gps = sgp.graank(f_path, min_sup, return_gps=True)
     for est_gp in clustered_gps:
         check, real_sup = sgp.contains_gp(est_gp, real_gps)
-        print([est_gp, est_gp.support, real_sup])
+        # print([est_gp, est_gp.support, real_sup])
         if check:
             same_gps.append([est_gp, est_gp.support, real_sup])
         else:
@@ -241,12 +246,12 @@ def compare_gps(clustered_gps, f_path, min_sup):
     return same_gps, miss_gps
 
 
-# print(clugps('../data/DATASET.csv', min_sup=0.5))
+print(clugps('../data/DATASET.csv', min_sup=0.5))
 # print(clugps('../data/breast_cancer.csv', min_sup=0.6))
 
-dset = sgp.DataGP(FILE, MIN_SUPPORT)
-r_mat = construct_pairs(dset)
-print(r_mat.net_wins)
-print(r_mat.wins)
-print(r_mat.pairs)
-print(r_mat.gradual_items)
+#dset = sgp.DataGP(FILE, MIN_SUPPORT)
+#r_mat = construct_pairs(dset)
+#print(r_mat.net_wins)
+#print(r_mat.wins)
+#print(r_mat.pairs)
+#print(r_mat.gradual_items)
