@@ -152,6 +152,21 @@ def construct_net_win(n, arr_pairs):
     return s_vector
 
 
+def estimate_score_vector(w_mat):
+    n, m = w_mat.shape
+    score_vector = np.ones(shape=(n,))
+    temp = score_vector.copy()
+    for i in range(n):
+        nume = np.sum(w_mat[i])
+        deno = 0
+        for j in range(m):
+            if i != j:
+                deno += (w_mat[i][j] + w_mat[j][i]) / (score_vector[i] + score_vector[j])
+        temp[i] = nume / deno
+    score_vector = temp / np.sum(temp)
+    return score_vector
+
+
 def get_group(n, i):
     # Retrieve group
     lb = 0
@@ -214,11 +229,8 @@ def infer_gps(clusters, d_gp, r_mat):
             cluster_gis = all_gis[grp_idxs]
             cluster_wins = construct_win_matrix(d_gp.row_count, cluster_pairs)
 
-            print(cluster_pairs)
-            print(cluster_wins)
-            print("\n")
-
             # Estimate support
+            score_vector = estimate_score_vector(cluster_wins)
             m = cluster.shape[0]
             xor = np.ones(cluster.shape[1], dtype=bool)
             for i in range(m):
@@ -227,6 +239,11 @@ def infer_gps(clusters, d_gp, r_mat):
                     xor = np.logical_and(xor, temp)
             prob = np.sum(xor) / cluster.shape[1]
             est_sup = prob #* np.min(cluster_sups)
+
+            print(score_vector)
+            print(cluster_pairs)
+            print(cluster_wins)
+            print("\n")
 
             # Infer GPs from the clusters
             gp = sgp.GP()
