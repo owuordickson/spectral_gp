@@ -231,14 +231,14 @@ def infer_gps(clusters, d_gp, r_mat):
 
             # Estimate support
             score_vector = estimate_score_vector(cluster_wins)
-            m = cluster.shape[0]
-            xor = np.ones(cluster.shape[1], dtype=bool)
-            for i in range(m):
-                if (i + 1) < m:
-                    temp = np.equal(cluster[i], cluster[i + 1])
-                    xor = np.logical_and(xor, temp)
-            prob = np.sum(xor) / cluster.shape[1]
-            est_sup = prob #* np.min(cluster_sups)
+            # m = cluster.shape[0]
+            # xor = np.ones(cluster.shape[1], dtype=bool)
+            # for i in range(m):
+            #    if (i + 1) < m:
+            #        temp = np.equal(cluster[i], cluster[i + 1])
+            #        xor = np.logical_and(xor, temp)
+            # prob = np.sum(xor) / cluster.shape[1]
+            est_sup = 0  # prob  * np.min(cluster_sups)
 
             print(score_vector)
             print(cluster_pairs)
