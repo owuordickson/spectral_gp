@@ -162,6 +162,8 @@ def estimate_score_vector(w_mat, score_vector):
         for j in range(m):
             if i != j:
                 deno += (w_mat[i][j] + w_mat[j][i]) / (score_vector[i] + score_vector[j])
+        if deno == 0:
+            return score_vector
         temp[i] = nume / deno
     score_vector = temp / np.sum(temp)
     return score_vector
@@ -229,7 +231,7 @@ def infer_gps(clusters, d_gp, r_mat):
             # cluster_sups = sups[grp_idxs]
             cluster_gis = all_gis[grp_idxs]
             # cluster_pairs = cluster_pairs[:2]
-            cluster_wins = construct_win_matrix(d_gp.row_count, cluster_pairs)
+            cluster_wins = construct_win_matrix(n, cluster_pairs)
 
             # Compute score vector from pairs
             score_vector = np.ones(shape=(n,))
@@ -237,12 +239,22 @@ def infer_gps(clusters, d_gp, r_mat):
             for k in range(max_iter):
                 if np.count_nonzero(score_vector == 0) > 1:
                     break
-                score_vector = estimate_score_vector(cluster_wins, score_vector)
+                else:
+                    score_vector = estimate_score_vector(cluster_wins, score_vector)
 
             # Estimate support
-            est_sup = 0  # prob  * np.min(cluster_sups)
+            sim_pairs = 0
+            for i in range(n):
+                for j in range(i, n):
+                    if (score_vector[i] + score_vector[j]) == 0:
+                        prob = 0
+                    else:
+                        prob = (score_vector[i] - score_vector[j]) / (score_vector[i] + score_vector[j])
+                    if prob > d_gp.thd_supp:
+                        sim_pairs += 1
+            est_sup = sim_pairs / (n * (n - 1) * 0.5)  # prob  * np.min(cluster_sups)
 
-            print(score_vector)
+            # print(score_vector)
             # print(cluster_pairs)
             # print(cluster_wins)
             # print(cluster)
@@ -275,8 +287,8 @@ def compare_gps(clustered_gps, f_path, min_sup):
     return same_gps, miss_gps
 
 
-print(clugps('../data/DATASET.csv', min_sup=0.5))
-#print(clugps('../data/breast_cancer.csv', min_sup=0.6))
+# print(clugps('../data/DATASET.csv', min_sup=0.5))
+print(clugps('../data/breast_cancer.csv', min_sup=0.6))
 
 #dset = sgp.DataGP(FILE, MIN_SUPPORT)
 #r_mat = construct_pairs(dset)
