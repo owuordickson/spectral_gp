@@ -45,6 +45,7 @@ from sklearn.cluster import KMeans, MiniBatchKMeans, SpectralClustering, Agglome
 
 MIN_SUPPORT = 0.5
 ERASURE_PROBABILITY = 0.5
+SCORE_VECTOR_ITERATIONS = 20
 CLUSTER_ALGORITHM = 'kmeans'
 
 FILE = '../data/DATASET.csv'
@@ -230,32 +231,22 @@ def infer_gps(clusters, d_gp, r_mat):
             # cluster_pairs = cluster_pairs[:2]
             cluster_wins = construct_win_matrix(d_gp.row_count, cluster_pairs)
 
-            # Estimate support
+            # Compute score vector from pairs
             score_vector = np.ones(shape=(n,))
-            max_iter = 20
+            max_iter = SCORE_VECTOR_ITERATIONS
             for k in range(max_iter):
                 if np.count_nonzero(score_vector == 0) > 1:
                     break
                 score_vector = estimate_score_vector(cluster_wins, score_vector)
-            # count = 0
-            # for i in range(n):
-            #    temp = (n-(i+1)) * score_vector[i]
-            #    count += temp
-            # print(count)
-            # m = cluster.shape[0]
-            # xor = np.ones(cluster.shape[1], dtype=bool)
-            # for i in range(m):
-            #    if (i + 1) < m:
-            #        temp = np.equal(cluster[i], cluster[i + 1])
-            #        xor = np.logical_and(xor, temp)
-            # prob = np.sum(xor) / cluster.shape[1]
+
+            # Estimate support
             est_sup = 0  # prob  * np.min(cluster_sups)
 
             print(score_vector)
             # print(cluster_pairs)
             # print(cluster_wins)
             # print(cluster)
-            print("\n")
+            # print("\n")
 
             # Infer GPs from the clusters
             gp = sgp.GP()
