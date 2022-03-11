@@ -44,7 +44,7 @@ import so4gp as sgp
 from sklearn.cluster import KMeans, MiniBatchKMeans, SpectralClustering, AgglomerativeClustering
 
 MIN_SUPPORT = 0.5
-ERASURE_PROBABILITY = 0
+ERASURE_PROBABILITY = 0.5
 CLUSTER_ALGORITHM = 'kmeans'
 
 FILE = '../data/DATASET.csv'
@@ -96,8 +96,8 @@ def construct_pairs(d_gp, e):
     pair_count = int(n * (n - 1) * 0.5)
     p = 1 - e
     sampled_pairs = []
-    # sample_idx = random.sample(range(pair_count), int(p*pair_count))  # normal distribution
-    sample_idx = [0, 9, 6, 7, 3]  # For testing
+    sample_idx = random.sample(range(pair_count), int(p*pair_count))  # normal distribution
+    # sample_idx = [0, 9, 6, 7, 3]  # For testing
     # print(sample_idx)
     # for i in range(pair_count):
     for i in sample_idx:
@@ -152,9 +152,8 @@ def construct_net_win(n, arr_pairs):
     return s_vector
 
 
-def estimate_score_vector(w_mat):
+def estimate_score_vector(w_mat, score_vector):
     n, m = w_mat.shape
-    score_vector = np.ones(shape=(n,))
     temp = score_vector.copy()
     for i in range(n):
         nume = np.sum(w_mat[i])
@@ -183,7 +182,7 @@ def get_group(n, i):
 
 
 def construct_win_matrix(n, cluster_pairs):
-    w_vector = np.zeros(shape=(n,n), dtype=int)
+    w_vector = np.zeros(shape=(n, n), dtype=int)
     for lst_pairs in cluster_pairs:
         for pair in lst_pairs:
             w_vector[pair[0]][pair[1]] += 1
@@ -224,19 +223,25 @@ def infer_gps(clusters, d_gp, r_mat):
     lst_indices = [np.where(clusters == element)[0] for element in np.unique(clusters)]
     for grp_idxs in lst_indices:
         if grp_idxs.size > 1:
-            cluster = n_matrix[grp_idxs]
+            # cluster = n_matrix[grp_idxs]
             cluster_pairs = r_pairs[grp_idxs]
             # cluster_sups = sups[grp_idxs]
             cluster_gis = all_gis[grp_idxs]
+            # cluster_pairs = cluster_pairs[:2]
             cluster_wins = construct_win_matrix(d_gp.row_count, cluster_pairs)
 
             # Estimate support
-            score_vector = estimate_score_vector(cluster_wins)
-            count = 0
-            for i in range(n):
-                temp = (n-(i+1)) * score_vector[i]
-                count += temp
-            print(count)
+            score_vector = np.ones(shape=(n,))
+            max_iter = 20
+            for k in range(max_iter):
+                if np.count_nonzero(score_vector == 0) > 1:
+                    break
+                score_vector = estimate_score_vector(cluster_wins, score_vector)
+            # count = 0
+            # for i in range(n):
+            #    temp = (n-(i+1)) * score_vector[i]
+            #    count += temp
+            # print(count)
             # m = cluster.shape[0]
             # xor = np.ones(cluster.shape[1], dtype=bool)
             # for i in range(m):
@@ -247,8 +252,9 @@ def infer_gps(clusters, d_gp, r_mat):
             est_sup = 0  # prob  * np.min(cluster_sups)
 
             print(score_vector)
-            print(cluster_pairs)
-            print(cluster_wins)
+            # print(cluster_pairs)
+            # print(cluster_wins)
+            # print(cluster)
             print("\n")
 
             # Infer GPs from the clusters
@@ -279,7 +285,7 @@ def compare_gps(clustered_gps, f_path, min_sup):
 
 
 print(clugps('../data/DATASET.csv', min_sup=0.5))
-# print(clugps('../data/breast_cancer.csv', min_sup=0.6))
+#print(clugps('../data/breast_cancer.csv', min_sup=0.6))
 
 #dset = sgp.DataGP(FILE, MIN_SUPPORT)
 #r_mat = construct_pairs(dset)
