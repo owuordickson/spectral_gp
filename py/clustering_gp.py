@@ -250,11 +250,11 @@ def infer_gps(clusters, d_gp, r_mat):
                         prob = 0
                     else:
                         prob = (score_vector[i] - score_vector[j]) / (score_vector[i] + score_vector[j])
-                    if prob > d_gp.thd_supp:
+                    if prob >= d_gp.thd_supp:
                         sim_pairs += 1
             est_sup = sim_pairs / (n * (n - 1) * 0.5)  # prob  * np.min(cluster_sups)
 
-            # print(score_vector)
+            print(score_vector)
             # print(cluster_pairs)
             # print(cluster_wins)
             # print(cluster)
@@ -287,8 +287,8 @@ def compare_gps(clustered_gps, f_path, min_sup):
     return same_gps, miss_gps
 
 
-# print(clugps('../data/DATASET.csv', min_sup=0.5))
-print(clugps('../data/breast_cancer.csv', min_sup=0.6))
+print(clugps('../data/DATASET.csv', min_sup=0.5))
+# print(clugps('../data/breast_cancer.csv', min_sup=0.6))
 
 #dset = sgp.DataGP(FILE, MIN_SUPPORT)
 #r_mat = construct_pairs(dset)
