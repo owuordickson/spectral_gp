@@ -45,7 +45,7 @@ from sklearn.cluster import KMeans, MiniBatchKMeans, SpectralClustering, Agglome
 
 MIN_SUPPORT = 0.5
 ERASURE_PROBABILITY = 0.5
-SCORE_VECTOR_ITERATIONS = 20
+SCORE_VECTOR_ITERATIONS = 1
 CLUSTER_ALGORITHM = 'kmeans'
 
 FILE = '../data/DATASET.csv'
@@ -252,6 +252,9 @@ def infer_gps(clusters, d_gp, r_mat):
                         prob = (score_vector[i] - score_vector[j]) / (score_vector[i] + score_vector[j])
                     if prob >= d_gp.thd_supp:
                         sim_pairs += 1
+            # Estimate support
+            # for i in range(n):
+            #    sim_pairs += score_vector[i] * (n - (i+1))
             est_sup = sim_pairs / (n * (n - 1) * 0.5)  # prob  * np.min(cluster_sups)
 
             print(score_vector)
