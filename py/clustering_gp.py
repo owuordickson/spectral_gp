@@ -180,7 +180,11 @@ def estimate_score_vector_log(w_mat, score_vector):
                 wins = w_mat[i][j]
                 log = math.log(math.exp(score_vector[i]) / (math.exp(score_vector[i]) + math.exp(score_vector[j])), 10)
                 s += wins * log
-        temp[i] = s
+        # print(str(i) + ' : ' + str(s))
+        if temp[i] == 1:
+            temp[i] = s
+        elif temp[i] < s:
+            temp[i] = s
     score_vector = temp / np.sum(temp)
     return score_vector
 
