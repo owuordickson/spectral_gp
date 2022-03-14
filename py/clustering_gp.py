@@ -250,7 +250,7 @@ def infer_gps(clusters, d_gp, r_mat):
                         prob = 0
                     else:
                         prob = (score_vector[i] - score_vector[j]) / (score_vector[i] + score_vector[j])
-                    if prob >= d_gp.thd_supp:
+                    if prob > d_gp.thd_supp:
                         sim_pairs += 1
             # Estimate support
             # for i in range(n):
