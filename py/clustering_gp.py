@@ -34,6 +34,7 @@ the same cluster should have almost similar score vector.
 
 """
 import json
+import math
 import random
 import numpy as np
 from ypstruct import structure
@@ -44,8 +45,8 @@ import so4gp as sgp
 from sklearn.cluster import KMeans, MiniBatchKMeans, SpectralClustering, AgglomerativeClustering
 
 MIN_SUPPORT = 0.5
-ERASURE_PROBABILITY = 0.5
-SCORE_VECTOR_ITERATIONS = 1
+ERASURE_PROBABILITY = 0
+SCORE_VECTOR_ITERATIONS = 10
 CLUSTER_ALGORITHM = 'kmeans'
 
 FILE = '../data/DATASET.csv'
@@ -153,7 +154,7 @@ def construct_net_win(n, arr_pairs):
     return s_vector
 
 
-def estimate_score_vector(w_mat, score_vector):
+def estimate_score_vector_mat(w_mat, score_vector):
     n, m = w_mat.shape
     temp = score_vector.copy()
     for i in range(n):
@@ -165,6 +166,23 @@ def estimate_score_vector(w_mat, score_vector):
         if deno == 0:
             return score_vector
         temp[i] = nume / deno
+    score_vector = temp / np.sum(temp)
+    return score_vector
+
+
+def estimate_score_vector(w_mat, score_vector):
+    n, m = w_mat.shape
+    temp = score_vector.copy()
+    for i in range(n):
+        s = 0
+        for j in range(m):
+            if i != j:
+                wins = w_mat[i][j]
+                log = math.log(math.exp(score_vector[i]) / (math.exp(score_vector[i]) + math.exp(score_vector[j])), 10)
+                s += wins * log
+        # if deno == 0:
+        #    return score_vector
+        temp[i] = s
     score_vector = temp / np.sum(temp)
     return score_vector
 
@@ -214,21 +232,15 @@ def infer_gps(clusters, d_gp, r_mat):
     patterns = []
     str_patterns = []
 
-    # n_wins = r_mat.net_wins
-    # sups = n_wins.supports
     n = d_gp.row_count
-    n_matrix = r_mat.net_wins
+    # n_matrix = r_mat.net_wins
     r_pairs = r_mat.pairs
     all_gis = r_mat.gradual_items
-
-    # print(win_matrix)
 
     lst_indices = [np.where(clusters == element)[0] for element in np.unique(clusters)]
     for grp_idxs in lst_indices:
         if grp_idxs.size > 1:
-            # cluster = n_matrix[grp_idxs]
             cluster_pairs = r_pairs[grp_idxs]
-            # cluster_sups = sups[grp_idxs]
             cluster_gis = all_gis[grp_idxs]
             # cluster_pairs = cluster_pairs[:2]
             cluster_wins = construct_win_matrix(n, cluster_pairs)
@@ -243,19 +255,26 @@ def infer_gps(clusters, d_gp, r_mat):
                     score_vector = estimate_score_vector(cluster_wins, score_vector)
 
             # Estimate support
-            sim_pairs = 0
+            # sim_pairs = 0
+            sim_pairs = np.zeros(shape=(n,n))
             for i in range(n):
-                for j in range(i, n):
-                    if (score_vector[i] + score_vector[j]) == 0:
-                        prob = 0
-                    else:
-                        prob = (score_vector[i] - score_vector[j]) / (score_vector[i] + score_vector[j])
-                    if prob > d_gp.thd_supp:
-                        sim_pairs += 1
+                for j in range(n):
+                    prob = math.exp(score_vector[i]) / (math.exp(score_vector[i]) + math.exp(score_vector[j]))
+                    if prob > 0.5:
+                        # sim_pairs += 1
+                        sim_pairs[i][j] = 1
+                        # sim_pairs[j][i] = -1
+                    # if (score_vector[i] + score_vector[j]) == 0:
+                    #    prob = 0
+                    # else:
+                    #    prob = (score_vector[i] - score_vector[j]) / (score_vector[i] + score_vector[j])
+                    # if prob >= d_gp.thd_supp:
+                    #    sim_pairs += 1
             # Estimate support
             # for i in range(n):
             #    sim_pairs += score_vector[i] * (n - (i+1))
-            est_sup = sim_pairs / (n * (n - 1) * 0.5)  # prob  * np.min(cluster_sups)
+            print(sim_pairs)
+            est_sup = np.sum(sim_pairs) / (n * (n - 1) / 2)  # prob  * np.min(cluster_sups)
 
             print(score_vector)
             # print(cluster_pairs)
@@ -293,9 +312,9 @@ def compare_gps(clustered_gps, f_path, min_sup):
 print(clugps('../data/DATASET.csv', min_sup=0.5))
 # print(clugps('../data/breast_cancer.csv', min_sup=0.6))
 
-#dset = sgp.DataGP(FILE, MIN_SUPPORT)
-#r_mat = construct_pairs(dset)
-#print(r_mat.net_wins)
-#print(r_mat.wins)
-#print(r_mat.pairs)
-#print(r_mat.gradual_items)
+# dset = sgp.DataGP(FILE, MIN_SUPPORT)
+# r_mat = construct_pairs(dset)
+# print(r_mat.net_wins)
+# print(r_mat.wins)
+# print(r_mat.pairs)
+# print(r_mat.gradual_items)
