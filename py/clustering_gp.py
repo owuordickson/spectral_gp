@@ -170,7 +170,7 @@ def estimate_score_vector_mat(w_mat, score_vector):
     return score_vector
 
 
-def estimate_score_vector(w_mat, score_vector):
+def estimate_score_vector_log(w_mat, score_vector):
     n, m = w_mat.shape
     temp = score_vector.copy()
     for i in range(n):
@@ -180,8 +180,6 @@ def estimate_score_vector(w_mat, score_vector):
                 wins = w_mat[i][j]
                 log = math.log(math.exp(score_vector[i]) / (math.exp(score_vector[i]) + math.exp(score_vector[j])), 10)
                 s += wins * log
-        # if deno == 0:
-        #    return score_vector
         temp[i] = s
     score_vector = temp / np.sum(temp)
     return score_vector
@@ -229,6 +227,7 @@ def predict_clusters(nw_matrix, r, algorithm):
 
 
 def infer_gps(clusters, d_gp, r_mat):
+
     patterns = []
     str_patterns = []
 
@@ -237,7 +236,9 @@ def infer_gps(clusters, d_gp, r_mat):
     r_pairs = r_mat.pairs
     all_gis = r_mat.gradual_items
 
-    lst_indices = [np.where(clusters == element)[0] for element in np.unique(clusters)]
+    # lst_indices = [np.where(clusters == element)[0] for element in np.unique(clusters)]
+    lst_indices = list([np.array([0, 5, 7])])  # Hard coded - for testing
+    print(lst_indices)
     for grp_idxs in lst_indices:
         if grp_idxs.size > 1:
             cluster_pairs = r_pairs[grp_idxs]
@@ -252,11 +253,14 @@ def infer_gps(clusters, d_gp, r_mat):
                 if np.count_nonzero(score_vector == 0) > 1:
                     break
                 else:
-                    score_vector = estimate_score_vector(cluster_wins, score_vector)
+                    score_vector = estimate_score_vector_log(cluster_wins, score_vector)
+            score_vector = np.array([0.46, 0.5, 0.5, 0.46, 0.46])
+            temp_pos = score_vector < score_vector[:, np.newaxis]
+            print(np.array(temp_pos, dtype=int))
 
             # Estimate support
             # sim_pairs = 0
-            sim_pairs = np.zeros(shape=(n,n))
+            sim_pairs = np.zeros(shape=(n, n))
             for i in range(n):
                 for j in range(n):
                     prob = math.exp(score_vector[i]) / (math.exp(score_vector[i]) + math.exp(score_vector[j]))
@@ -309,7 +313,7 @@ def compare_gps(clustered_gps, f_path, min_sup):
     return same_gps, miss_gps
 
 
-print(clugps('../data/DATASET.csv', min_sup=0.5))
+print(clugps('../data/DATASET.csv', min_sup=0.2))
 # print(clugps('../data/breast_cancer.csv', min_sup=0.6))
 
 # dset = sgp.DataGP(FILE, MIN_SUPPORT)
