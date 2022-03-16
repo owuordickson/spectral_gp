@@ -67,3 +67,6 @@ def run_comparison():
     hit_gps, miss_gps = compare_gps(est_gps, cfg.DATASET, cfg.MIN_SUPPORT)
     for gp in miss_gps:
         print(gp.print(output.titles))
+
+
+run_comparison()
