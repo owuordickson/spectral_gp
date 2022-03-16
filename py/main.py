@@ -70,4 +70,4 @@ def run_comparison():
         print(gp.print(d_gp.titles))
 
 
-run_comparison()
+# run_comparison()
