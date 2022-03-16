@@ -152,6 +152,7 @@ def construct_pairs(d_gp, e):
 
 
 def construct_net_win(n, arr_pairs):
+    # Construct a net-wins matrix from bitmaps corresponding to every valid gradual item.
     s_vector = np.zeros(shape=(n,), dtype=int)
     for i in range(n):
         x_i = np.count_nonzero(arr_pairs[:, 0] == i)
