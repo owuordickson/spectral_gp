@@ -71,13 +71,13 @@ if __name__ == "__main__":
 
     import time
     import tracemalloc
+    import py.cluster_gps as cgp
     from py.shared.profile import Profile
-    from main import execute
 
     # CLU-GPs
     start = time.time()
     tracemalloc.start()
-    res_text = execute(filePath, minSup, algChoice, eProb, itMax, numCores)
+    res_text = cgp.execute(filePath, minSup, algChoice, eProb, itMax, numCores)
     snapshot = tracemalloc.take_snapshot()
     end = time.time()
 
