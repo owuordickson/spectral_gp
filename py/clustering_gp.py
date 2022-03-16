@@ -313,11 +313,14 @@ def compare_gps(clustered_gps, f_path, min_sup):
 
 
 # print(clugps('../data/DATASET.csv', min_sup=0.2))
-output, est_gps = clugps(FILE, min_sup=MIN_SUPPORT, return_gps=True)
+output, est_gps = clugps(f_path=FILE, min_sup=MIN_SUPPORT, return_gps=True)
 print(output)
 
 # Compare inferred GPs with real GPs
 hit_gps, miss_gps = compare_gps(est_gps, FILE, MIN_SUPPORT)
+d_gp = sgp.DataGP(FILE, min_sup=MIN_SUPPORT)
+for gp in miss_gps:
+    print(gp.print(d_gp.titles))
 
 # dset = sgp.DataGP(FILE, MIN_SUPPORT)
 # r_mat = construct_pairs(dset)
