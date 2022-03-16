@@ -38,12 +38,11 @@ import math
 import random
 import numpy as np
 from ypstruct import structure
+from sklearn.cluster import KMeans, MiniBatchKMeans, SpectralClustering, AgglomerativeClustering
 
 import so4gp as sgp
 
 # Configuration Parameters
-from sklearn.cluster import KMeans, MiniBatchKMeans, SpectralClustering, AgglomerativeClustering
-
 MIN_SUPPORT = 0.5
 CLUSTER_ALGORITHM = 'kmeans'  # selects algorithm to be used for clustering the net-win matrices
 ERASURE_PROBABILITY = 0.5  # determines the number of pairs to be ignored
