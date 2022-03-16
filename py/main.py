@@ -65,8 +65,9 @@ def run_comparison():
 
     # Compare inferred GPs with real GPs
     hit_gps, miss_gps = compare_gps(est_gps, cfg.DATASET, cfg.MIN_SUPPORT)
+    d_gp = sgp.DataGP(cfg.DATASET, cfg.MIN_SUPPORT)
     for gp in miss_gps:
-        print(gp.print(output.titles))
+        print(gp.print(d_gp.titles))
 
 
 run_comparison()
