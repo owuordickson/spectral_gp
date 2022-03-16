@@ -239,14 +239,6 @@ def get_group(n, i):
     return -1, -1
 
 
-def construct_win_matrix(n, cluster_pairs):
-    w_vector = np.zeros(shape=(n, n), dtype=int)
-    for lst_pairs in cluster_pairs:
-        for pair in lst_pairs:
-            w_vector[pair[0]][pair[1]] += 1
-    return w_vector
-
-
 def predict_clusters(nw_matrix, r, algorithm):
     if algorithm == 'kmeans':
         kmeans = KMeans(n_clusters=r, random_state=0)
@@ -271,7 +263,7 @@ def infer_gps(clusters, d_gp, r_mat, max_iter):
     str_patterns = []
 
     n = d_gp.row_count
-    n_wins = r_mat.net_wins
+    # n_wins = r_mat.net_wins
     r_pairs = r_mat.pairs
     all_gis = r_mat.gradual_items
 
@@ -283,45 +275,28 @@ def infer_gps(clusters, d_gp, r_mat, max_iter):
             cluster_pairs = r_pairs[grp_idxs]
             cluster_gis = all_gis[grp_idxs]
             # cluster_pairs = cluster_pairs[:2]
-            cluster_wins = construct_win_matrix(n, cluster_pairs)
-            cluster_wins_eff = n_wins[grp_idxs]
-            for mat in cluster_wins_eff:
-                mat[mat == -1] = 0
-            # cluster_mats = construct_win_mats(n, cluster_pairs)
-
-            print("\n COMPARE WINS")
-            print(str(cluster_wins) + ' and \n' + str(cluster_wins_eff) + 'and \n' + str() + 'END\n')
 
             # Compute score vector from pairs
             score_vector = estimate_score_vector(n, cluster_pairs, max_iter)
             # score_vector = np.array([0.46, 0.5, 0.5, 0.46, 0.46])
             # score_vector = np.array(cluster_mats[1])
-            temp_pos = score_vector < score_vector[:, np.newaxis]
-            print(np.array(temp_pos, dtype=int))
+            # temp_pos = score_vector < score_vector[:, np.newaxis]
+            # print(np.array(temp_pos, dtype=int))
 
             # Estimate support
-            # sim_pairs = 0
-            sim_pairs = np.zeros(shape=(n, n))
+            sim_pairs = 0
+            # sim_pairs = np.zeros(shape=(n, n))
             for i in range(n):
                 for j in range(i, n):
                     prob = math.exp(score_vector[i]) / (math.exp(score_vector[i]) + math.exp(score_vector[j]))
                     if prob > 0.5:
-                        # sim_pairs += 1
-                        sim_pairs[i][j] = 1
-                        # sim_pairs[j][i] = -1
-                    # if (score_vector[i] + score_vector[j]) == 0:
-                    #    prob = 0
-                    # else:
-                    #    prob = (score_vector[i] - score_vector[j]) / (score_vector[i] + score_vector[j])
-                    # if prob >= d_gp.thd_supp:
-                    #    sim_pairs += 1
-            # Estimate support
-            # for i in range(n):
-            #    sim_pairs += score_vector[i] * (n - (i+1))
-            print(sim_pairs)
-            est_sup = np.sum(sim_pairs) / (n * (n - 1) / 2)  # prob  * np.min(cluster_sups)
+                        sim_pairs += 1
+                        # sim_pairs[i][j] = 1
+            # est_sup = np.sum(sim_pairs) / (n * (n - 1) / 2)  # prob  * np.min(cluster_sups)
+            est_sup = sim_pairs / (n * (n - 1) / 2)  # prob  * np.min(cluster_sups)
 
             print(score_vector)
+            print(sim_pairs)
             # print(cluster_pairs)
             # print(cluster_wins)
             # print(cluster)
