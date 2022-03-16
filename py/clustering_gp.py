@@ -162,17 +162,6 @@ def construct_net_win(n, arr_pairs):
     return s_vector
 
 
-def estimate_score_vector_del(n, wins_mat, max_iter):
-    # Compute score vector from pairs
-    score_vector = np.ones(shape=(n,))
-    for k in range(max_iter):
-        if np.count_nonzero(score_vector == 0) > 1:
-            return score_vector
-        else:
-            score_vector = compute_score_log(wins_mat, score_vector)
-    return score_vector
-
-
 def estimate_support(n, score_vectors):
     # Estimate support - use different score-vectors to construct pairs
     sim_pairs = 0
@@ -218,22 +207,6 @@ def estimate_score_vector(n, cluster_pairs, max_iter):
         # Replace with minimum values
         np.copyto(score_vector, temp_vec, where=(temp_vec < score_vector))
     return score_vector, lst_vectors
-
-
-def compute_score_mat(w_mat, score_vector):
-    n, m = w_mat.shape
-    temp = score_vector.copy()
-    for i in range(n):
-        nume = np.sum(w_mat[i])
-        deno = 0
-        for j in range(m):
-            if i != j:
-                deno += (w_mat[i][j] + w_mat[j][i]) / (score_vector[i] + score_vector[j])
-        if deno == 0:
-            return score_vector
-        temp[i] = nume / deno
-    score_vector = temp / np.sum(temp)
-    return score_vector
 
 
 def compute_score_log(w_mat, score_vector):
