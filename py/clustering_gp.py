@@ -102,6 +102,13 @@ def construct_pairs(d_gp, e):
     sample_idx = random.sample(range(pair_count), int(p*pair_count))  # normal distribution
     # sample_idx = [0, 9, 6, 7, 3]  # For testing
     # print(sample_idx)
+
+    # mat = np.arange(10)
+    # choice = np.random.choice(range(mat.shape[0]), size=(int(mat.shape[0] / 2),), replace=False)
+    # ind = np.zeros(mat.shape[0], dtype=bool)
+    # ind[choice] = True
+    # rest = mat[~ind]
+
     # for i in range(pair_count):
     for i in sample_idx:
         # Retrieve group
@@ -330,7 +337,7 @@ def compare_gps(clustered_gps, f_path, min_sup):
 
 
 # print(clugps('../data/DATASET.csv', min_sup=0.2))
-print(clugps('../data/breast_cancer.csv', min_sup=0.6))
+# print(clugps('../data/breast_cancer.csv', min_sup=0.6))
 
 # dset = sgp.DataGP(FILE, MIN_SUPPORT)
 # r_mat = construct_pairs(dset)
