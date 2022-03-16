@@ -40,7 +40,7 @@ import numpy as np
 from ypstruct import structure
 from sklearn.cluster import KMeans, MiniBatchKMeans, SpectralClustering, AgglomerativeClustering
 
-import so4gp as sgp
+import py.shared.so4gp as sgp
 from py.shared.profile import Profile
 
 # Configuration Parameters
@@ -77,7 +77,7 @@ def clugps(f_path=None, min_sup=MIN_SUPPORT, algorithm=CLUSTER_ALGORITHM, e_prob
     str_gps, gps = infer_gps(y_pred, d_gp, r_matrix, max_iter)
     # print(str_gps)
 
-    # Output
+    # Output - DO NOT ADD TO PyPi Package
     out = structure()
     out.estimated_gps = gps
     # out.iteration_count = it_count
@@ -306,6 +306,7 @@ def compute_score_log(w_mat, score_vector):
     return score_vector
 
 
+# DO NOT ADD TO PyPi Package
 def execute(f_path, min_supp,  algorithm, e_prob, max_iter, cores):
     try:
         if cores > 1:
