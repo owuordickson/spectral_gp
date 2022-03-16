@@ -3,7 +3,7 @@
 @author: "Dickson Owuor"
 @created: "16 Mar 2022"
 Usage:
-    $python comparison.py -f ../data/DATASET.csv -s 0.5
+    $python main.py -f ../data/DATASET.csv -s 0.5
 Description:
     f -> file path (CSV)
     s -> minimum support
@@ -59,7 +59,7 @@ if __name__ == "__main__":
         (options, args) = optparser.parse_args()
 
         if options.file is None:
-            print("Usage: $python3 comparison.py -f filename.csv -a 'kmeans'")
+            print("Usage: $python3 main.py -f filename.csv -a 'kmeans'")
             sys.exit('System will exit')
         else:
             filePath = options.file
