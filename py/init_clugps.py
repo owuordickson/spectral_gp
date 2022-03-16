@@ -9,7 +9,7 @@ Description:
     s -> minimum support
     a -> clustering algorithm
     e -> erasure probability
-    it -> maximum iteration
+    i -> maximum iteration
 """
 
 import sys
@@ -47,7 +47,7 @@ if __name__ == "__main__":
                              help='erasure probability',
                              default=cfg.ERASURE_PROBABILITY,
                              type='float')
-        optparser.add_option('-it', '--maxIteration',
+        optparser.add_option('-i', '--maxIteration',
                              dest='itMax',
                              help='maximum iteration for score vector estimation',
                              default=cfg.SCORE_VECTOR_ITERATIONS,

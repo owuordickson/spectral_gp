@@ -11,7 +11,7 @@ def execute(f_path, min_supp,  algorithm, e_prob, max_iter, cores):
             num_cores = Profile.get_num_cores()
 
         out = cgp.clugps(f_path, min_supp, algorithm, e_prob, max_iter)
-        list_gp = out.best_patterns
+        list_gp = out.estimated_gps
 
         wr_line = "Algorithm: Clu-GRAD (v1.0)\n"
         wr_line += "No. of (dataset) attributes: " + str(out.col_count) + '\n'
@@ -36,17 +36,18 @@ def execute(f_path, min_supp,  algorithm, e_prob, max_iter, cores):
             wr_line += (str(gp.to_string()) + ' : ' + str(round(gp.support, 3)) + '\n')
 
         return wr_line
-    except ArithmeticError as error:
+    except Exception as error:
         wr_line = "Failed: " + str(error)
         print(error)
         return wr_line
 
 
-output, est_gps = cgp.clugps(f_path=cgp.FILE, min_sup=cgp.MIN_SUPPORT, return_gps=True)
-print(output)
+def run_comparison():
+    output, est_gps = cgp.clugps(f_path=cgp.FILE, min_sup=cgp.MIN_SUPPORT, return_gps=True)
+    print(output)
 
-# Compare inferred GPs with real GPs
-hit_gps, miss_gps = cgp.compare_gps(est_gps, cgp.FILE, cgp.MIN_SUPPORT)
-d_gp = sgp.DataGP(cgp.FILE, min_sup=cgp.MIN_SUPPORT)
-for gp in miss_gps:
-    print(gp.print(d_gp.titles))
+    # Compare inferred GPs with real GPs
+    hit_gps, miss_gps = cgp.compare_gps(est_gps, cgp.FILE, cgp.MIN_SUPPORT)
+    d_gp = sgp.DataGP(cgp.FILE, min_sup=cgp.MIN_SUPPORT)
+    for gp in miss_gps:
+        print(gp.print(d_gp.titles))

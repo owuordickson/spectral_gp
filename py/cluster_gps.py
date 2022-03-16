@@ -78,7 +78,17 @@ def clugps(f_path=None, min_sup=MIN_SUPPORT, algorithm=CLUSTER_ALGORITHM, e_prob
     # print(str_gps)
 
     # Output
-    out = json.dumps({"Algorithm": "Clu-GRAD", "Patterns": str_gps})
+    out = structure()
+    out.estimated_gps = gps
+    # out.iteration_count = it_count
+    out.max_iteration = sv_max_iter
+    out.titles = d_gp.titles
+    out.col_count = d_gp.col_count
+    out.row_count = d_gp.row_count
+    out.e_prob = e_probability
+
+    # Output
+    out.json = json.dumps({"Algorithm": "Clu-GRAD", "Patterns": str_gps})
     """:type out: object"""
     if return_gps:
         return out, gps
@@ -308,17 +318,3 @@ def compare_gps(clustered_gps, f_path, min_sup):
     # print(same_gps)
     print(str_gps)
     return same_gps, miss_gps
-
-
-# FILE = '../data/DATASET.csv'
-FILE = '../data/breast_cancer.csv'
-# print(clugps('../data/DATASET.csv', min_sup=0.2))
-output, est_gps = clugps(f_path=FILE, return_gps=True)
-print(output)
-
-# dset = sgp.DataGP(FILE, MIN_SUPPORT)
-# r_mat = construct_pairs(dset)
-# print(r_mat.net_wins)
-# print(r_mat.wins)
-# print(r_mat.pairs)
-# print(r_mat.gradual_items)
