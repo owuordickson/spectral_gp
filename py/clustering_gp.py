@@ -76,7 +76,8 @@ def clugps(f_path=None, min_sup=MIN_SUPPORT, algorithm=CLUSTER_ALGORITHM, return
     # 1a. Clustering using KMeans or MiniBatchKMeans or SpectralClustering or AgglomerativeClustering
     y_pred = predict_clusters(n_wins_approx, r, algorithm=algorithm)
     # 1b. Infer GPs
-    str_gps, gps = infer_gps(y_pred, d_gp, r_matrix)
+    max_iter = SCORE_VECTOR_ITERATIONS
+    str_gps, gps = infer_gps(y_pred, d_gp, r_matrix, max_iter)
     # print(str_gps)
 
     # Compare inferred GPs with real GPs
@@ -154,7 +155,41 @@ def construct_net_win(n, arr_pairs):
     return s_vector
 
 
-def estimate_score_vector_mat(w_mat, score_vector):
+def estimate_score_vector_del(n, wins_mat, max_iter):
+    # Compute score vector from pairs
+    score_vector = np.ones(shape=(n,))
+    for k in range(max_iter):
+        if np.count_nonzero(score_vector == 0) > 1:
+            return score_vector
+        else:
+            score_vector = compute_score_log(wins_mat, score_vector)
+    return score_vector
+
+
+def estimate_score_vector(n, cluster_pairs, max_iter):
+    # Estimate score vector from pairs
+    score_vector = np.ones(shape=(n,))
+
+    for pairs in cluster_pairs:
+        # Construct a win-matrix
+        temp_mat = np.zeros(shape=(n, n), dtype=int)
+        for pair in pairs:
+            temp_mat[pair[0]][pair[1]] = 1
+
+        # Compute score vector
+        temp_vec = np.ones(shape=(n,))
+        for k in range(max_iter):
+            if np.count_nonzero(temp_vec == 0) > 1:
+                break
+            else:
+                temp_vec = compute_score_log(temp_mat, temp_vec)
+
+        # Replace with minimum values
+        np.copyto(score_vector, temp_vec, where=(temp_vec < score_vector))
+    return score_vector
+
+
+def compute_score_mat(w_mat, score_vector):
     n, m = w_mat.shape
     temp = score_vector.copy()
     for i in range(n):
@@ -170,7 +205,7 @@ def estimate_score_vector_mat(w_mat, score_vector):
     return score_vector
 
 
-def estimate_score_vector_log(w_mat, score_vector):
+def compute_score_log(w_mat, score_vector):
     n, m = w_mat.shape
     temp = score_vector.copy()
     for i in range(n):
@@ -230,13 +265,13 @@ def predict_clusters(nw_matrix, r, algorithm):
     return y_pred
 
 
-def infer_gps(clusters, d_gp, r_mat):
+def infer_gps(clusters, d_gp, r_mat, max_iter):
 
     patterns = []
     str_patterns = []
 
     n = d_gp.row_count
-    # n_matrix = r_mat.net_wins
+    n_wins = r_mat.net_wins
     r_pairs = r_mat.pairs
     all_gis = r_mat.gradual_items
 
@@ -249,16 +284,18 @@ def infer_gps(clusters, d_gp, r_mat):
             cluster_gis = all_gis[grp_idxs]
             # cluster_pairs = cluster_pairs[:2]
             cluster_wins = construct_win_matrix(n, cluster_pairs)
+            cluster_wins_eff = n_wins[grp_idxs]
+            for mat in cluster_wins_eff:
+                mat[mat == -1] = 0
+            # cluster_mats = construct_win_mats(n, cluster_pairs)
+
+            print("\n COMPARE WINS")
+            print(str(cluster_wins) + ' and \n' + str(cluster_wins_eff) + 'and \n' + str() + 'END\n')
 
             # Compute score vector from pairs
-            score_vector = np.ones(shape=(n,))
-            max_iter = SCORE_VECTOR_ITERATIONS
-            for k in range(max_iter):
-                if np.count_nonzero(score_vector == 0) > 1:
-                    break
-                else:
-                    score_vector = estimate_score_vector_log(cluster_wins, score_vector)
-            score_vector = np.array([0.46, 0.5, 0.5, 0.46, 0.46])
+            score_vector = estimate_score_vector(n, cluster_pairs, max_iter)
+            # score_vector = np.array([0.46, 0.5, 0.5, 0.46, 0.46])
+            # score_vector = np.array(cluster_mats[1])
             temp_pos = score_vector < score_vector[:, np.newaxis]
             print(np.array(temp_pos, dtype=int))
 
@@ -266,7 +303,7 @@ def infer_gps(clusters, d_gp, r_mat):
             # sim_pairs = 0
             sim_pairs = np.zeros(shape=(n, n))
             for i in range(n):
-                for j in range(n):
+                for j in range(i, n):
                     prob = math.exp(score_vector[i]) / (math.exp(score_vector[i]) + math.exp(score_vector[j]))
                     if prob > 0.5:
                         # sim_pairs += 1
