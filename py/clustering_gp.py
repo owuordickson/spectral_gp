@@ -49,7 +49,8 @@ ERASURE_PROBABILITY = 0.5
 SCORE_VECTOR_ITERATIONS = 10
 CLUSTER_ALGORITHM = 'kmeans'
 
-FILE = '../data/DATASET.csv'
+# FILE = '../data/DATASET.csv'
+FILE = '../data/breast_cancer.csv'
 
 
 def clugps(f_path=None, min_sup=MIN_SUPPORT, algorithm=CLUSTER_ALGORITHM, return_gps=False):
@@ -77,9 +78,6 @@ def clugps(f_path=None, min_sup=MIN_SUPPORT, algorithm=CLUSTER_ALGORITHM, return
     max_iter = SCORE_VECTOR_ITERATIONS
     str_gps, gps = infer_gps(y_pred, d_gp, r_matrix, max_iter)
     # print(str_gps)
-
-    # Compare inferred GPs with real GPs
-    compare_gps(gps, f_path, min_sup)
 
     # Output
     out = json.dumps({"Algorithm": "Clu-GRAD", "Patterns": str_gps})
@@ -315,7 +313,11 @@ def compare_gps(clustered_gps, f_path, min_sup):
 
 
 # print(clugps('../data/DATASET.csv', min_sup=0.2))
-print(clugps('../data/breast_cancer.csv', min_sup=0.6))
+output, est_gps = clugps(FILE, min_sup=MIN_SUPPORT, return_gps=True)
+print(output)
+
+# Compare inferred GPs with real GPs
+hit_gps, miss_gps = compare_gps(est_gps, FILE, MIN_SUPPORT)
 
 # dset = sgp.DataGP(FILE, MIN_SUPPORT)
 # r_mat = construct_pairs(dset)
