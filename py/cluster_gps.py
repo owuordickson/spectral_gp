@@ -50,7 +50,7 @@ SCORE_VECTOR_ITERATIONS = 10  # maximum iteration for score vector estimation
 
 
 def clugps(f_path=None, min_sup=MIN_SUPPORT, algorithm=CLUSTER_ALGORITHM, e_probability=ERASURE_PROBABILITY,
-           sv_max_iter=SCORE_VECTOR_ITERATIONS, return_gps=False):
+           sv_max_iter=SCORE_VECTOR_ITERATIONS, return_gps=False, testing=False):
     # Create a DataGP object
     d_gp = sgp.DataGP(f_path, min_sup)
     """:type d_gp: DataGP"""
@@ -85,9 +85,11 @@ def clugps(f_path=None, min_sup=MIN_SUPPORT, algorithm=CLUSTER_ALGORITHM, e_prob
     out.col_count = d_gp.col_count
     out.row_count = d_gp.row_count
     out.e_prob = e_probability
+    if testing:
+        return out
 
     # Output
-    out.json = json.dumps({"Algorithm": "Clu-GRAD", "Patterns": str_gps})
+    out = json.dumps({"Algorithm": "Clu-GRAD", "Patterns": str_gps})
     """:type out: object"""
     if return_gps:
         return out, gps

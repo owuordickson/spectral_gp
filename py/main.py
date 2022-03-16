@@ -11,7 +11,7 @@ def execute(f_path, min_supp,  algorithm, e_prob, max_iter, cores):
         else:
             num_cores = Profile.get_num_cores()
 
-        out = cgp.clugps(f_path, min_supp, algorithm, e_prob, max_iter)
+        out = cgp.clugps(f_path, min_supp, algorithm, e_prob, max_iter, testing=True)
         list_gp = out.estimated_gps
 
         wr_line = "Algorithm: Clu-GRAD (v1.0)\n"
@@ -61,7 +61,7 @@ def compare_gps(clustered_gps, f_path, min_sup):
 
 def run_comparison():
     output, est_gps = cgp.clugps(f_path=cfg.DATASET, min_sup=cfg.MIN_SUPPORT, return_gps=True)
-    print(output.json)
+    print(output)
 
     # Compare inferred GPs with real GPs
     hit_gps, miss_gps = compare_gps(est_gps, cfg.DATASET, cfg.MIN_SUPPORT)
