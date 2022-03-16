@@ -302,19 +302,3 @@ def compute_score_log(w_mat, score_vector):
             temp[i] = s
     score_vector = temp / np.sum(temp)
     return score_vector
-
-
-def compare_gps(clustered_gps, f_path, min_sup):
-    same_gps = []
-    miss_gps = []
-    str_gps, real_gps = sgp.graank(f_path, min_sup, return_gps=True)
-    for est_gp in clustered_gps:
-        check, real_sup = sgp.contains_gp(est_gp, real_gps)
-        # print([est_gp, est_gp.support, real_sup])
-        if check:
-            same_gps.append([est_gp, est_gp.support, real_sup])
-        else:
-            miss_gps.append(est_gp)
-    # print(same_gps)
-    print(str_gps)
-    return same_gps, miss_gps

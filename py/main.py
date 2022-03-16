@@ -1,4 +1,5 @@
 import cluster_gps as cgp
+import config as cfg
 import so4gp as sgp
 from profile import Profile
 
@@ -42,12 +43,27 @@ def execute(f_path, min_supp,  algorithm, e_prob, max_iter, cores):
         return wr_line
 
 
+def compare_gps(clustered_gps, f_path, min_sup):
+    same_gps = []
+    miss_gps = []
+    str_gps, real_gps = sgp.graank(f_path, min_sup, return_gps=True)
+    for est_gp in clustered_gps:
+        check, real_sup = sgp.contains_gp(est_gp, real_gps)
+        # print([est_gp, est_gp.support, real_sup])
+        if check:
+            same_gps.append([est_gp, est_gp.support, real_sup])
+        else:
+            miss_gps.append(est_gp)
+    # print(same_gps)
+    print(str_gps)
+    return same_gps, miss_gps
+
+
 def run_comparison():
-    output, est_gps = cgp.clugps(f_path=cgp.FILE, min_sup=cgp.MIN_SUPPORT, return_gps=True)
-    print(output)
+    output, est_gps = cgp.clugps(f_path=cfg.DATASET, min_sup=cfg.MIN_SUPPORT, return_gps=True)
+    print(output.json)
 
     # Compare inferred GPs with real GPs
-    hit_gps, miss_gps = cgp.compare_gps(est_gps, cgp.FILE, cgp.MIN_SUPPORT)
-    d_gp = sgp.DataGP(cgp.FILE, min_sup=cgp.MIN_SUPPORT)
+    hit_gps, miss_gps = compare_gps(est_gps, cfg.DATASET, cfg.MIN_SUPPORT)
     for gp in miss_gps:
-        print(gp.print(d_gp.titles))
+        print(gp.print(output.titles))
