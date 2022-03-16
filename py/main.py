@@ -1,5 +1,5 @@
 import cluster_gps as cgp
-import so4gp as sgp
+import py.so4gp as sgp
 from py.shared import config as cfg
 from py.shared.profile import Profile
 
