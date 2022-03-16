@@ -161,6 +161,79 @@ def construct_net_win(n, arr_pairs):
     return s_vector
 
 
+def get_pair_partition(n, i):
+    # Retrieve group from: (n-1), (n-2), (n-3) ..., (n-(n-1)) using index i
+    lb = 0
+    k = 1
+    x = n - k
+    while k < n:
+        if i < x:
+            return k, (i-lb)
+        else:
+            lb = x
+            k += 1
+            x += (n - k)
+    return -1, -1
+
+
+def predict_clusters(nw_matrix, r, algorithm):
+    if algorithm == 'kmeans':
+        kmeans = KMeans(n_clusters=r, random_state=0)
+        y_pred = kmeans.fit_predict(nw_matrix)
+    elif algorithm == 'mbkmeans':
+        kmeans = MiniBatchKMeans(n_clusters=r)
+        y_pred = kmeans.fit_predict(nw_matrix)
+    elif algorithm == 'sc':
+        spectral_model = SpectralClustering(n_clusters=r)
+        y_pred = spectral_model.fit_predict(nw_matrix)
+    elif algorithm == 'ac':
+        model = AgglomerativeClustering(n_clusters=r)
+        y_pred = model.fit_predict(nw_matrix)
+    else:
+        raise Exception("Error: unknown clustering algorithm selected!")
+    return y_pred
+
+
+def infer_gps(clusters, d_gp, r_mat, max_iter):
+
+    patterns = []
+    str_patterns = []
+
+    n = d_gp.row_count
+    r_pairs = r_mat.pairs
+    all_gis = r_mat.gradual_items
+
+    lst_indices = [np.where(clusters == element)[0] for element in np.unique(clusters)]
+    # lst_indices = list([np.array([0, 5, 7])])  # Hard coded - for testing
+    # print(lst_indices)
+    for grp_idxs in lst_indices:
+        if grp_idxs.size > 1:
+            # 1. Retrieve all cluster-pairs and the corresponding GIs
+            cluster_pairs = r_pairs[grp_idxs]
+            cluster_gis = all_gis[grp_idxs]
+
+            # 2. Compute score vector from pairs
+            min_score_vector, score_vectors = estimate_score_vector(n, cluster_pairs, max_iter)
+
+            # 3. Estimate support
+            est_sup = estimate_support(n, score_vectors)
+
+            # print(score_vector)
+            # print(cluster_pairs)
+            # print(cluster)
+            # print("\n")
+
+            # 4. Infer GPs from the clusters
+            gp = sgp.GP()
+            for gi in cluster_gis:
+                gp.add_gradual_item(gi)
+            gp.set_support(est_sup)
+            patterns.append(gp)
+            str_patterns.append(gp.print(d_gp.titles))
+            # print(gp.print(d_gp.titles))
+    return str_patterns, patterns
+
+
 def estimate_support(n, score_vectors):
     # Estimate support - use different score-vectors to construct pairs
     sim_pairs = 0
@@ -223,78 +296,6 @@ def compute_score_log(w_mat, score_vector):
             temp[i] = s
     score_vector = temp / np.sum(temp)
     return score_vector
-
-
-def get_pair_partition(n, i):
-    # Retrieve group from: (n-1), (n-2), (n-3) ..., (n-(n-1)) using index i
-    lb = 0
-    k = 1
-    x = n - k
-    while k < n:
-        if i < x:
-            return k, (i-lb)
-        else:
-            lb = x
-            k += 1
-            x += (n - k)
-    return -1, -1
-
-
-def predict_clusters(nw_matrix, r, algorithm):
-    if algorithm == 'kmeans':
-        kmeans = KMeans(n_clusters=r, random_state=0)
-        y_pred = kmeans.fit_predict(nw_matrix)
-    elif algorithm == 'mbkmeans':
-        kmeans = MiniBatchKMeans(n_clusters=r)
-        y_pred = kmeans.fit_predict(nw_matrix)
-    elif algorithm == 'sc':
-        spectral_model = SpectralClustering(n_clusters=r)
-        y_pred = spectral_model.fit_predict(nw_matrix)
-    elif algorithm == 'ac':
-        model = AgglomerativeClustering(n_clusters=r)
-        y_pred = model.fit_predict(nw_matrix)
-    else:
-        raise Exception("Error: unknown clustering algorithm selected!")
-    return y_pred
-
-
-def infer_gps(clusters, d_gp, r_mat, max_iter):
-
-    patterns = []
-    str_patterns = []
-
-    n = d_gp.row_count
-    r_pairs = r_mat.pairs
-    all_gis = r_mat.gradual_items
-
-    lst_indices = [np.where(clusters == element)[0] for element in np.unique(clusters)]
-    # lst_indices = list([np.array([0, 5, 7])])  # Hard coded - for testing
-    # print(lst_indices)
-    for grp_idxs in lst_indices:
-        if grp_idxs.size > 1:
-            cluster_pairs = r_pairs[grp_idxs]
-            cluster_gis = all_gis[grp_idxs]
-
-            # Compute score vector from pairs
-            min_score_vector, score_vectors = estimate_score_vector(n, cluster_pairs, max_iter)
-
-            # Estimate support - use different score-vectors to construct pairs
-            est_sup = estimate_support(n, score_vectors)
-
-            # print(score_vector)
-            # print(cluster_pairs)
-            # print(cluster)
-            # print("\n")
-
-            # Infer GPs from the clusters
-            gp = sgp.GP()
-            for gi in cluster_gis:
-                gp.add_gradual_item(gi)
-            gp.set_support(est_sup)
-            patterns.append(gp)
-            str_patterns.append(gp.print(d_gp.titles))
-            # print(gp.print(d_gp.titles))
-    return str_patterns, patterns
 
 
 def compare_gps(clustered_gps, f_path, min_sup):
