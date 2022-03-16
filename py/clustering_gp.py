@@ -45,7 +45,7 @@ import so4gp as sgp
 from sklearn.cluster import KMeans, MiniBatchKMeans, SpectralClustering, AgglomerativeClustering
 
 MIN_SUPPORT = 0.5
-ERASURE_PROBABILITY = 0.5
+ERASURE_PROBABILITY = 0
 SCORE_VECTOR_ITERATIONS = 10
 CLUSTER_ALGORITHM = 'kmeans'
 
@@ -101,7 +101,7 @@ def construct_pairs(d_gp, e):
     sampled_pairs = []
     sample_idx = random.sample(range(pair_count), int(p*pair_count))  # normal distribution
     # sample_idx = [0, 9, 6, 7, 3]  # For testing
-    # print(sample_idx)
+    print(sample_idx)
 
     # mat = np.arange(10)
     # choice = np.random.choice(range(mat.shape[0]), size=(int(mat.shape[0] / 2),), replace=False)
@@ -337,7 +337,7 @@ def compare_gps(clustered_gps, f_path, min_sup):
 
 
 # print(clugps('../data/DATASET.csv', min_sup=0.2))
-# print(clugps('../data/breast_cancer.csv', min_sup=0.6))
+print(clugps('../data/breast_cancer.csv', min_sup=0.6))
 
 # dset = sgp.DataGP(FILE, MIN_SUPPORT)
 # r_mat = construct_pairs(dset)
