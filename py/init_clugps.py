@@ -14,8 +14,7 @@ Description:
 
 import sys
 from optparse import OptionParser
-import config as cfg
-
+from py.shared import config as cfg
 
 if __name__ == "__main__":
     if not sys.argv:
@@ -72,7 +71,7 @@ if __name__ == "__main__":
 
     import time
     import tracemalloc
-    from profile import Profile
+    from py.shared.profile import Profile
     from main import execute
 
     # CLU-GPs

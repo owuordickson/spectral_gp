@@ -1,7 +1,7 @@
 import cluster_gps as cgp
-import config as cfg
 import so4gp as sgp
-from profile import Profile
+from py.shared import config as cfg
+from py.shared.profile import Profile
 
 
 def execute(f_path, min_supp,  algorithm, e_prob, max_iter, cores):
