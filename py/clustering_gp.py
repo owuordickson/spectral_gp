@@ -45,7 +45,7 @@ import so4gp as sgp
 from sklearn.cluster import KMeans, MiniBatchKMeans, SpectralClustering, AgglomerativeClustering
 
 MIN_SUPPORT = 0.5
-ERASURE_PROBABILITY = 0
+ERASURE_PROBABILITY = 0.5
 SCORE_VECTOR_ITERATIONS = 10
 CLUSTER_ALGORITHM = 'kmeans'
 
@@ -101,7 +101,7 @@ def construct_pairs(d_gp, e):
     sampled_pairs = []
     sample_idx = random.sample(range(pair_count), int(p*pair_count))  # normal distribution
     # sample_idx = [0, 9, 6, 7, 3]  # For testing
-    print(sample_idx)
+    # print(sample_idx)
 
     # mat = np.arange(10)
     # choice = np.random.choice(range(mat.shape[0]), size=(int(mat.shape[0] / 2),), replace=False)
@@ -173,9 +173,33 @@ def estimate_score_vector_del(n, wins_mat, max_iter):
     return score_vector
 
 
+def estimate_support(n, score_vectors):
+    # Estimate support - use different score-vectors to construct pairs
+    sim_pairs = 0
+    is_common = False
+    # sim_pairs = np.ones(shape=(n, n))
+    # np.fill_diagonal(sim_pairs, 0)
+    for i in range(n):
+        for j in range(n):
+            if is_common:
+                sim_pairs += 1
+            is_common = True
+            for s_vec in score_vectors:
+                prob = math.exp(s_vec[i]) / (math.exp(s_vec[i]) + math.exp(s_vec[j]))
+                if prob <= 0.5:
+                    is_common = False
+                    # sim_pairs += 1
+                    # sim_pairs[i][j] = 0
+    # est_sup = np.sum(sim_pairs) / (n * (n - 1) / 2)  # prob  * np.min(cluster_sups)
+    est_sup = sim_pairs / (n * (n - 1) / 2)  # prob  * np.min(cluster_sups)
+    # print(sim_pairs)
+    return est_sup
+
+
 def estimate_score_vector(n, cluster_pairs, max_iter):
     # Estimate score vector from pairs
     score_vector = np.ones(shape=(n,))
+    lst_vectors = []
 
     for pairs in cluster_pairs:
         # Construct a win-matrix
@@ -190,10 +214,10 @@ def estimate_score_vector(n, cluster_pairs, max_iter):
                 break
             else:
                 temp_vec = compute_score_log(temp_mat, temp_vec)
-
+        lst_vectors.append(temp_vec)
         # Replace with minimum values
         np.copyto(score_vector, temp_vec, where=(temp_vec < score_vector))
-    return score_vector
+    return score_vector, lst_vectors
 
 
 def compute_score_mat(w_mat, score_vector):
@@ -284,26 +308,16 @@ def infer_gps(clusters, d_gp, r_mat, max_iter):
             # cluster_pairs = cluster_pairs[:2]
 
             # Compute score vector from pairs
-            score_vector = estimate_score_vector(n, cluster_pairs, max_iter)
+            min_score_vector, score_vectors = estimate_score_vector(n, cluster_pairs, max_iter)
             # score_vector = np.array([0.46, 0.5, 0.5, 0.46, 0.46])
             # score_vector = np.array(cluster_mats[1])
             # temp_pos = score_vector < score_vector[:, np.newaxis]
             # print(np.array(temp_pos, dtype=int))
 
-            # Estimate support
-            sim_pairs = 0
-            # sim_pairs = np.zeros(shape=(n, n))
-            for i in range(n):
-                for j in range(i, n):
-                    prob = math.exp(score_vector[i]) / (math.exp(score_vector[i]) + math.exp(score_vector[j]))
-                    if prob > 0.5:
-                        sim_pairs += 1
-                        # sim_pairs[i][j] = 1
-            # est_sup = np.sum(sim_pairs) / (n * (n - 1) / 2)  # prob  * np.min(cluster_sups)
-            est_sup = sim_pairs / (n * (n - 1) / 2)  # prob  * np.min(cluster_sups)
+            # Estimate support - use different score-vectors to construct pairs
+            est_sup = estimate_support(n, score_vectors)
 
             # print(score_vector)
-            print(sim_pairs)
             # print(cluster_pairs)
             # print(cluster_wins)
             # print(cluster)
