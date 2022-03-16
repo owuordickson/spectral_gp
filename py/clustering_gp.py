@@ -58,8 +58,6 @@ def clugps(f_path=None, min_sup=MIN_SUPPORT, algorithm=CLUSTER_ALGORITHM, return
     """:type d_gp: DataGP"""
 
     # Generate net-win matrices
-    # d_gp.construct_net_wins()
-    # n_wins = d_gp.net_wins.matrix
     r_matrix = construct_pairs(d_gp, e=ERASURE_PROBABILITY)
     n_wins = r_matrix.net_wins
     # print(n_wins)
@@ -178,10 +176,9 @@ def estimate_support(n, score_vectors):
                 prob = math.exp(s_vec[i]) / (math.exp(s_vec[i]) + math.exp(s_vec[j]))
                 if prob <= 0.5:
                     is_common = False
-                    # sim_pairs += 1
                     # sim_pairs[i][j] = 0
     # est_sup = np.sum(sim_pairs) / (n * (n - 1) / 2)  # prob  * np.min(cluster_sups)
-    est_sup = sim_pairs / (n * (n - 1) / 2)  # prob  * np.min(cluster_sups)
+    est_sup = sim_pairs / (n * (n - 1) / 2)
     # print(sim_pairs)
     return est_sup
 
@@ -220,7 +217,6 @@ def compute_score_log(w_mat, score_vector):
                 wins = w_mat[i][j]
                 log = math.log(math.exp(score_vector[i]) / (math.exp(score_vector[i]) + math.exp(score_vector[j])), 10)
                 s += wins * log
-        # print(str(i) + ' : ' + str(s))
         if temp[i] == 1:
             temp[i] = s
         elif temp[i] < s:
@@ -278,11 +274,9 @@ def infer_gps(clusters, d_gp, r_mat, max_iter):
         if grp_idxs.size > 1:
             cluster_pairs = r_pairs[grp_idxs]
             cluster_gis = all_gis[grp_idxs]
-            # cluster_pairs = cluster_pairs[:2]
 
             # Compute score vector from pairs
             min_score_vector, score_vectors = estimate_score_vector(n, cluster_pairs, max_iter)
-            # score_vector = np.array([0.46, 0.5, 0.5, 0.46, 0.46])
 
             # Estimate support - use different score-vectors to construct pairs
             est_sup = estimate_support(n, score_vectors)
