@@ -112,7 +112,7 @@ def construct_pairs(d_gp, e):
     # for i in range(pair_count):
     for i in sample_idx:
         # Retrieve group
-        g, i_g = get_group(n, i)
+        g, i_g = get_pair_partition(n, i)
         # print(str(i) + ' grp: ' + str(g))
         pair = [(g-1), (g + i_g)]
         sampled_pairs.append(pair)
@@ -228,8 +228,8 @@ def compute_score_log(w_mat, score_vector):
     return score_vector
 
 
-def get_group(n, i):
-    # Retrieve group
+def get_pair_partition(n, i):
+    # Retrieve group from: (n-1), (n-2), (n-3) ..., (n-(n-1)) using index i
     lb = 0
     k = 1
     x = n - k
@@ -267,7 +267,6 @@ def infer_gps(clusters, d_gp, r_mat, max_iter):
     str_patterns = []
 
     n = d_gp.row_count
-    # n_wins = r_mat.net_wins
     r_pairs = r_mat.pairs
     all_gis = r_mat.gradual_items
 
@@ -283,16 +282,12 @@ def infer_gps(clusters, d_gp, r_mat, max_iter):
             # Compute score vector from pairs
             min_score_vector, score_vectors = estimate_score_vector(n, cluster_pairs, max_iter)
             # score_vector = np.array([0.46, 0.5, 0.5, 0.46, 0.46])
-            # score_vector = np.array(cluster_mats[1])
-            # temp_pos = score_vector < score_vector[:, np.newaxis]
-            # print(np.array(temp_pos, dtype=int))
 
             # Estimate support - use different score-vectors to construct pairs
             est_sup = estimate_support(n, score_vectors)
 
             # print(score_vector)
             # print(cluster_pairs)
-            # print(cluster_wins)
             # print(cluster)
             # print("\n")
 
