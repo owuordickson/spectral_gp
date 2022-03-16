@@ -960,9 +960,9 @@ def graank(f_path=None, min_sup=MIN_SUPPORT, eq=False, return_gps=False):
                 str_winner_gps.append(gp.print(d_set.titles))
                 i += 1
                 # TO BE REMOVED
-                if gp.contains_strict(GI(0, '+')) and gp.contains_strict(GI(2, '-')) and gp.contains_strict(GI(3, '-')):
-                    print(gp.to_string())
-                    print(np.array(bin_data, dtype=int))
+                # if gp.contains_strict(GI(0, '+')) and gp.contains_strict(GI(2, '-')) and gp.contains_strict(GI(3, '-')):
+                #    print(gp.to_string())
+                #    print(np.array(bin_data, dtype=int))
                 # TO BE REMOVED
     # Output
     out = json.dumps({"Algorithm": "GRAANK", "Patterns": str_winner_gps})

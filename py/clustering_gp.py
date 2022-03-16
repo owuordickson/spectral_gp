@@ -45,7 +45,7 @@ import so4gp as sgp
 from sklearn.cluster import KMeans, MiniBatchKMeans, SpectralClustering, AgglomerativeClustering
 
 MIN_SUPPORT = 0.5
-ERASURE_PROBABILITY = 0
+ERASURE_PROBABILITY = 0.5
 SCORE_VECTOR_ITERATIONS = 10
 CLUSTER_ALGORITHM = 'kmeans'
 
@@ -267,9 +267,9 @@ def infer_gps(clusters, d_gp, r_mat, max_iter):
     r_pairs = r_mat.pairs
     all_gis = r_mat.gradual_items
 
-    # lst_indices = [np.where(clusters == element)[0] for element in np.unique(clusters)]
-    lst_indices = list([np.array([0, 5, 7])])  # Hard coded - for testing
-    print(lst_indices)
+    lst_indices = [np.where(clusters == element)[0] for element in np.unique(clusters)]
+    # lst_indices = list([np.array([0, 5, 7])])  # Hard coded - for testing
+    # print(lst_indices)
     for grp_idxs in lst_indices:
         if grp_idxs.size > 1:
             cluster_pairs = r_pairs[grp_idxs]
@@ -295,7 +295,7 @@ def infer_gps(clusters, d_gp, r_mat, max_iter):
             # est_sup = np.sum(sim_pairs) / (n * (n - 1) / 2)  # prob  * np.min(cluster_sups)
             est_sup = sim_pairs / (n * (n - 1) / 2)  # prob  * np.min(cluster_sups)
 
-            print(score_vector)
+            # print(score_vector)
             print(sim_pairs)
             # print(cluster_pairs)
             # print(cluster_wins)
@@ -329,8 +329,8 @@ def compare_gps(clustered_gps, f_path, min_sup):
     return same_gps, miss_gps
 
 
-print(clugps('../data/DATASET.csv', min_sup=0.2))
-# print(clugps('../data/breast_cancer.csv', min_sup=0.6))
+# print(clugps('../data/DATASET.csv', min_sup=0.2))
+print(clugps('../data/breast_cancer.csv', min_sup=0.6))
 
 # dset = sgp.DataGP(FILE, MIN_SUPPORT)
 # r_mat = construct_pairs(dset)
