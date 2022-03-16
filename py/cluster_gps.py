@@ -45,21 +45,19 @@ import so4gp as sgp
 from sklearn.cluster import KMeans, MiniBatchKMeans, SpectralClustering, AgglomerativeClustering
 
 MIN_SUPPORT = 0.5
-ERASURE_PROBABILITY = 0.5
-SCORE_VECTOR_ITERATIONS = 10
-CLUSTER_ALGORITHM = 'kmeans'
-
-# FILE = '../data/DATASET.csv'
-FILE = '../data/breast_cancer.csv'
+CLUSTER_ALGORITHM = 'kmeans'  # selects algorithm to be used for clustering the net-win matrices
+ERASURE_PROBABILITY = 0.5  # determines the number of pairs to be ignored
+SCORE_VECTOR_ITERATIONS = 10  # maximum iteration for score vector estimation
 
 
-def clugps(f_path=None, min_sup=MIN_SUPPORT, algorithm=CLUSTER_ALGORITHM, return_gps=False):
+def clugps(f_path=None, min_sup=MIN_SUPPORT, algorithm=CLUSTER_ALGORITHM, e_probability=ERASURE_PROBABILITY,
+           sv_max_iter=SCORE_VECTOR_ITERATIONS, return_gps=False):
     # Create a DataGP object
     d_gp = sgp.DataGP(f_path, min_sup)
     """:type d_gp: DataGP"""
 
     # Generate net-win matrices
-    r_matrix = construct_pairs(d_gp, e=ERASURE_PROBABILITY)
+    r_matrix = construct_pairs(d_gp, e=e_probability)
     n_wins = r_matrix.net_wins
     # print(n_wins)
 
@@ -75,7 +73,7 @@ def clugps(f_path=None, min_sup=MIN_SUPPORT, algorithm=CLUSTER_ALGORITHM, return
     # 1a. Clustering using KMeans or MiniBatchKMeans or SpectralClustering or AgglomerativeClustering
     y_pred = predict_clusters(n_wins_approx, r, algorithm=algorithm)
     # 1b. Infer GPs
-    max_iter = SCORE_VECTOR_ITERATIONS
+    max_iter = sv_max_iter
     str_gps, gps = infer_gps(y_pred, d_gp, r_matrix, max_iter)
     # print(str_gps)
 
@@ -312,15 +310,11 @@ def compare_gps(clustered_gps, f_path, min_sup):
     return same_gps, miss_gps
 
 
+# FILE = '../data/DATASET.csv'
+FILE = '../data/breast_cancer.csv'
 # print(clugps('../data/DATASET.csv', min_sup=0.2))
-output, est_gps = clugps(f_path=FILE, min_sup=MIN_SUPPORT, return_gps=True)
+output, est_gps = clugps(f_path=FILE, return_gps=True)
 print(output)
-
-# Compare inferred GPs with real GPs
-# hit_gps, miss_gps = compare_gps(est_gps, FILE, MIN_SUPPORT)
-# d_gp = sgp.DataGP(FILE, min_sup=MIN_SUPPORT)
-# for gp in miss_gps:
-#    print(gp.print(d_gp.titles))
 
 # dset = sgp.DataGP(FILE, MIN_SUPPORT)
 # r_mat = construct_pairs(dset)
