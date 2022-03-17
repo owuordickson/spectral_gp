@@ -74,7 +74,7 @@ if __name__ == "__main__":
     import py.cluster_gps as cgp
     from py.shared.profile import Profile
 
-    # CLU-GPs
+    # CLU-GRAD
     start = time.time()
     tracemalloc.start()
     res_text = cgp.execute(filePath, minSup, algChoice, eProb, itMax, numCores)
