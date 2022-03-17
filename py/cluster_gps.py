@@ -6,13 +6,13 @@
 
 @license: MIT
 
-@version: 0.0.1
+@version: 0.1.0
 
 @email: owuordickson@gmail.com
 
 @created: 01 March 2022
 
-@modified: 01 March 2022
+@modified: 17 March 2022
 
 Clustering Gradual Items
 ------------------------
@@ -40,7 +40,7 @@ import numpy as np
 from ypstruct import structure
 from sklearn.cluster import KMeans, MiniBatchKMeans, SpectralClustering, AgglomerativeClustering
 
-import py.shared.so4gp as sgp
+import so4gp as sgp
 from py.shared.profile import Profile
 
 # Configuration Parameters
