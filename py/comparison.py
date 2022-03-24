@@ -1,4 +1,4 @@
-import cluster_gps as cgp
+import cluster_gps_v2 as cgp
 import so4gp as sgp
 from py.shared import config as cfg
 

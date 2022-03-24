@@ -71,7 +71,7 @@ if __name__ == "__main__":
 
     import time
     import tracemalloc
-    import py.cluster_gps as cgp
+    import py.cluster_gps_v1 as cgp
     from py.shared.profile import Profile
 
     # CLU-GRAD
@@ -85,5 +85,5 @@ if __name__ == "__main__":
     wr_text += (Profile.get_quick_mem_use(snapshot) + "\n")
     wr_text += str(res_text)
     f_name = str('res_cgp_v1' + str(end).replace('.', '', 1) + '.txt')
-    Profile.write_file(wr_text, f_name, wr=False)
+    Profile.write_file(wr_text, f_name, wr=True)
     print(wr_text)
