@@ -171,7 +171,7 @@ def construct_matrices(d_gp, e):
     res.gradual_items = np.array(lst_gis)
     res.r_idx = np.array(r_mat_idx, dtype=object)
     res.nwin_matrix = np.array(s_mat)
-    # res.a_matrix = a_mat
+    res.a_matrix = a_mat
     return res
 
 
@@ -216,6 +216,7 @@ def infer_gps(clusters, d_gp, mat_obj, max_iter):
     n = d_gp.row_count
     all_gis = mat_obj.gradual_items
     r_idx = mat_obj.r_idx
+    a_mat = mat_obj.a_matrix
 
     lst_indices = [np.where(clusters == element)[0] for element in np.unique(clusters)]
     # lst_indices = list([np.array([0, 5, 7])])  # Hard coded - for testing
@@ -234,6 +235,7 @@ def infer_gps(clusters, d_gp, mat_obj, max_iter):
 
             # 3. Estimate support
             est_sup = estimate_support(n, score_vectors)
+            # est_sup = estimate_support_v2(score_vectors, a_mat)  # Has a bug
 
             # 4. Infer GPs from the clusters
             gp = sgp.GP()
@@ -244,28 +246,6 @@ def infer_gps(clusters, d_gp, mat_obj, max_iter):
             str_patterns.append(gp.print(d_gp.titles))
             # print(gp.print(d_gp.titles))
     return str_patterns, patterns
-
-
-def estimate_support(n, score_vectors):
-    # Estimate support - use different score-vectors to construct pairs
-    sim_pairs = 0
-    is_common = False
-    # sim_pairs = np.ones(shape=(n, n))
-    # np.fill_diagonal(sim_pairs, 0)
-    for i in range(n):
-        for j in range(n):
-            if is_common:
-                sim_pairs += 1
-            is_common = True
-            for s_vec in score_vectors:
-                prob = math.exp(s_vec[i]) / (math.exp(s_vec[i]) + math.exp(s_vec[j]))
-                if prob <= 0.5:
-                    is_common = False
-                    # sim_pairs[i][j] = 0
-    # est_sup = np.sum(sim_pairs) / (n * (n - 1) / 2)  # prob  * np.min(cluster_sups)
-    est_sup = sim_pairs / (n * (n - 1) / 2)
-    # print(sim_pairs)
-    return est_sup
 
 
 def estimate_score_vector(n, r_idxs, max_iter):
@@ -297,6 +277,36 @@ def estimate_score_vector(n, r_idxs, max_iter):
                     temp_vec[j] += -pr_val * log
             score_vector = temp_vec / np.sum(temp_vec)
     return score_vector
+
+
+def estimate_support(n, score_vectors):
+    # Estimate support - use different score-vectors to construct pairs
+    sim_pairs = 0
+    is_common = False
+    for i in range(n):
+        for j in range(n):
+            if is_common:
+                sim_pairs += 1
+            is_common = True
+            for s_vec in score_vectors:
+                prob = math.exp(s_vec[i]) / (math.exp(s_vec[i]) + math.exp(s_vec[j]))
+                if prob <= 0.5:
+                    is_common = False
+    est_sup = sim_pairs / (n * (n - 1) / 2)
+    # print(sim_pairs)
+    return est_sup
+
+
+def estimate_support_v2(score_vectors, a_mat):
+    n = a_mat.shape[1]
+    r_vec = np.ones(shape=(n,))
+    for s_vec in score_vectors:
+        temp_vec = np.dot(s_vec, a_mat)
+        temp_vec[temp_vec > 0] = 1
+        temp_vec[temp_vec < 0] = 0
+        r_vec = np.multiply(r_vec, temp_vec)
+    est_sup = np.sum(r_vec) / (n * (n - 1) / 2)
+    return est_sup
 
 
 # DO NOT ADD TO PyPi Package

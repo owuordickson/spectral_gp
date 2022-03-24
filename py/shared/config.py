@@ -8,8 +8,8 @@ CPU_CORES = 4  # Depends on your computer
 # DATASET = "../../data/hcv_data.csv"
 
 # Uncomment for Main:
-# DATASET = "../data/DATASET.csv"
-DATASET = '../data/breast_cancer.csv'
+DATASET = "../data/DATASET.csv"
+# DATASET = '../data/breast_cancer.csv'
 
 
 # Uncomment for Terminal:

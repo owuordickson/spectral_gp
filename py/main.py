@@ -85,5 +85,5 @@ if __name__ == "__main__":
     wr_text += (Profile.get_quick_mem_use(snapshot) + "\n")
     wr_text += str(res_text)
     f_name = str('res_cgp_v1' + str(end).replace('.', '', 1) + '.txt')
-    Profile.write_file(wr_text, f_name, wr=True)
+    Profile.write_file(wr_text, f_name, wr=False)
     print(wr_text)
