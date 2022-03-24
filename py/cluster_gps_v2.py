@@ -117,28 +117,11 @@ def construct_matrices(d_gp, e):
     # Compute gradual relation
     attr_data = d_gp.data.T
     lst_gis = []
-    r_mat = []
-    # Construct R matrix from data set
-    for col in d_gp.attr_cols:
-        col_data = np.array(attr_data[col], dtype=float)
-        r_vec = np.zeros(shape=(pair_count,))  # Approach 2
-        for idx in sample_idx:  # Approach 2
-            g, i_g = get_pair_partition(n, idx)
-            i = (g - 1)
-            j = (g + i_g)
-            if col_data[i] < col_data[j]:
-                r_vec[idx] = 1
-            elif col_data[i] > col_data[j]:
-                r_vec[idx] = -1
-        if np.count_nonzero(r_vec) > 0:  # Approach 2
-            r_mat.append(r_vec)
-            lst_gis.append(sgp.GI(col, '+'))
-            r_mat.append(-r_vec)
-            lst_gis.append(sgp.GI(col, '-'))
-    r_mat = np.array(r_mat)
+    r_mat_idx = []
+    s_mat = []
+    a_mat = np.zeros(shape=(n, pair_count))
 
     # Construct A matrix
-    a_mat = np.zeros(shape=(n, pair_count))
     for idx in range(pair_count):
         ei = np.zeros(shape=(n,)).T
         ej = np.zeros(shape=(n,)).T
@@ -149,15 +132,45 @@ def construct_matrices(d_gp, e):
         ej[j] = 1
         a_mat[:, idx] = ei - ej
 
-    # Compute net-win matrix
-    s_mat = np.dot(r_mat, a_mat.T)
-    s_mat[s_mat > 0] = 1
-    s_mat[s_mat < 0] = -1
+    # Construct R matrix from data set
+    for col in d_gp.attr_cols:
+        col_data = np.array(attr_data[col], dtype=float)
+        r_vec = np.zeros(shape=(pair_count,))
+        r_idx_pos = []
+        r_idx_neg = []
+        for idx in sample_idx:
+            g, i_g = get_pair_partition(n, idx)
+            i = (g - 1)
+            j = (g + i_g)
+
+            # Construct R vector
+            if col_data[i] < col_data[j]:
+                r_vec[idx] = 1
+                r_idx_pos.append([idx, 1])  # For estimating score-vector
+                r_idx_neg.append([idx, -1])  # For estimating score-vector
+            elif col_data[i] > col_data[j]:
+                r_vec[idx] = -1
+                r_idx_pos.append([idx, -1])  # For estimating score-vector
+                r_idx_neg.append([idx, 1])  # For estimating score-vector
+
+        if np.count_nonzero(r_vec) > 0:
+            # Compute net-win vector
+            s_vec = np.dot(r_vec, a_mat.T)
+            s_vec[s_vec > 0] = 1
+            s_vec[s_vec < 0] = -1
+
+            r_mat_idx.append(r_idx_pos)
+            s_mat.append(s_vec)
+            lst_gis.append(sgp.GI(col, '+'))
+
+            r_mat_idx.append(r_idx_neg)
+            s_mat.append(-s_vec)
+            lst_gis.append(sgp.GI(col, '-'))
 
     res = structure()
     res.gradual_items = np.array(lst_gis)
-    res.r_matrix = r_mat
-    res.nwin_matrix = s_mat
+    res.r_idx = np.array(r_mat_idx, dtype=object)
+    res.nwin_matrix = np.array(s_mat)
     # res.a_matrix = a_mat
     return res
 
@@ -202,7 +215,7 @@ def infer_gps(clusters, d_gp, mat_obj, max_iter):
 
     n = d_gp.row_count
     all_gis = mat_obj.gradual_items
-    r_mat = mat_obj.r_matrix  # Approach 2
+    r_idx = mat_obj.r_idx
 
     lst_indices = [np.where(clusters == element)[0] for element in np.unique(clusters)]
     # lst_indices = list([np.array([0, 5, 7])])  # Hard coded - for testing
@@ -211,12 +224,12 @@ def infer_gps(clusters, d_gp, mat_obj, max_iter):
         if grp_idxs.size > 1:
             # 1. Retrieve all cluster-pairs and the corresponding GIs
             cluster_gis = all_gis[grp_idxs]
-            cluster_rs = r_mat[grp_idxs]  # Approach 2
+            cluster_ridxs = r_idx[grp_idxs]
 
             # 2. Compute score vector from R matrix
             score_vectors = []  # Approach 2
-            for r in cluster_rs:  # Approach 2
-                temp = estimate_score_vector(n, r, max_iter)
+            for idxs in cluster_ridxs:  # Approach 2
+                temp = estimate_score_vector(n, idxs, max_iter)
                 score_vectors.append(temp)
 
             # 3. Estimate support
@@ -255,7 +268,7 @@ def estimate_support(n, score_vectors):
     return est_sup
 
 
-def estimate_score_vector(n, r_mat, max_iter):
+def estimate_score_vector(n, r_idxs, max_iter):
     # Estimate score vector from pairs
     score_vector = np.ones(shape=(n,))
 
@@ -267,8 +280,10 @@ def estimate_score_vector(n, r_mat, max_iter):
         if np.count_nonzero(score_vector == 0) > 1:
             break
         else:
-            for idx in range(r_mat.shape[0]):
-                pr_val = r_mat[idx]
+            # for idx in range(r_mat.shape[0]):
+            for i_obj in r_idxs:
+                idx = i_obj[0]
+                pr_val = i_obj[1]
                 g, i_g = get_pair_partition(n, idx)
                 i = (g - 1)
                 j = (g + i_g)

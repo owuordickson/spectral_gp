@@ -71,7 +71,7 @@ if __name__ == "__main__":
 
     import time
     import tracemalloc
-    import py.cluster_gps_v1 as cgp
+    import py.cluster_gps_v2 as cgp
     from py.shared.profile import Profile
 
     # CLU-GRAD

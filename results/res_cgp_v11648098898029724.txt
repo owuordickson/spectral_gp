@@ -1,5 +1,5 @@
-Run-time: 10.032594203948975 seconds
-Total allocated memory size: 281.7 KiB
+Run-time: 5.716524839401245 seconds
+Total allocated memory size: 285.7 KiB
 Algorithm: Clu-GRAD (v1.2)
 No. of (dataset) attributes: 10
 No. of (dataset) tuples: 116
@@ -22,11 +22,11 @@ Number of iterations: None
 File: ../data/breast_cancer.csv
 
 Pattern : Support
-['1-', '5-', '6+'] : 0.412
-['1+', '5+', '6-'] : 0.446
-['2+', '9+'] : 0.477
-['3+', '4+'] : 0.927
-['7-', '8-'] : 0.655
-['2-', '9-'] : 0.528
-['3-', '4-'] : 0.915
-['7+', '8+'] : 0.661
+['3+', '4+'] : 0.918
+['3-', '4-'] : 0.925
+['6-', '7+', '8+'] : 0.413
+['6+', '7-', '8-'] : 0.388
+['2-', '9-'] : 0.52
+['1+', '5+'] : 0.716
+['1-', '5-'] : 0.722
+['2+', '9+'] : 0.498
