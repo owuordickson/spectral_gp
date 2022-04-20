@@ -1,7 +1,7 @@
 pkg_algorithms/
 __init__.py
 config.py
-py/comparison.py
+src/comparison.py
 
 .idea/
 

@@ -79,7 +79,7 @@ class Profile:
         wr_line += ("Top %s lines" % limit)
         for index, stat in enumerate(top_stats[:limit], 1):
             frame = stat.traceback[0]
-            # replace "/path/to/module/file.py" with "module/file.py"
+            # replace "/path/to/module/file.src" with "module/file.src"
             filename = os.sep.join(frame.filename.split(os.sep)[-2:])
             wr_line += ("\n #%s: %s:%s: %.1f KiB" % (index, filename, frame.lineno, stat.size / 1024))
             line = linecache.getline(frame.filename, frame.lineno).strip()

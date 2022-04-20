@@ -41,7 +41,7 @@ from ypstruct import structure
 from sklearn.cluster import KMeans, MiniBatchKMeans, SpectralClustering, AgglomerativeClustering
 
 import so4gp as sgp
-from py.shared.profile import Profile
+from .shared.profile import Profile
 
 # Configuration Parameters
 MIN_SUPPORT = 0.5

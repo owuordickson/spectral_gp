@@ -1,6 +1,6 @@
-import cluster_gps_v2 as cgp
+import cluster_gp as cgp
 import so4gp as sgp
-from py.shared import config as cfg
+from .shared import config as cfg
 
 
 def compare_gps(clustered_gps, f_path, min_sup):

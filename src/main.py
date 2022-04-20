@@ -3,7 +3,7 @@
 @author: "Dickson Owuor"
 @created: "16 Mar 2022"
 Usage:
-    $python main.py -f ../data/DATASET.csv -s 0.5
+    $python main.src -f ../data/DATASET.csv -s 0.5
 Description:
     f -> file path (CSV)
     s -> minimum support
@@ -14,7 +14,7 @@ Description:
 
 import sys
 from optparse import OptionParser
-from py.shared import config as cfg
+from .shared import config as cfg
 
 if __name__ == "__main__":
     if not sys.argv:
@@ -59,7 +59,7 @@ if __name__ == "__main__":
         (options, args) = optparser.parse_args()
 
         if options.file is None:
-            print("Usage: $python3 main.py -f filename.csv -a 'kmeans'")
+            print("Usage: $python3 main.src -f filename.csv -a 'kmeans'")
             sys.exit('System will exit')
         else:
             filePath = options.file
@@ -71,8 +71,8 @@ if __name__ == "__main__":
 
     import time
     import tracemalloc
-    import py.cluster_gps_v2 as cgp
-    from py.shared.profile import Profile
+    import cluster_gp as cgp
+    from .shared.profile import Profile
 
     # CLU-GRAD
     start = time.time()
