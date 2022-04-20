@@ -15,7 +15,7 @@ Description:
 import sys
 import so4gp
 from optparse import OptionParser
-from . import config as cfg
+import config as cfg
 
 if __name__ == "__main__":
     if not sys.argv:
@@ -72,7 +72,7 @@ if __name__ == "__main__":
 
     import time
     import tracemalloc
-    from .pkg_algorithms import cluster_gp as cgp
+    from pkg_algorithms import cluster_gp as cgp
 
     # CLU-GRAD
     Profile = so4gp.Profile
