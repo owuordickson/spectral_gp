@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Configurations for Gradual Patterns:
-ALGORITHM = 'acograd'  # clugrad or acograd or graank
+ALGORITHM = 'clugrad'  # clugrad or acograd or graank
 MIN_SUPPORT = 0.5
 CPU_CORES = 4  # Depends on your computer
 

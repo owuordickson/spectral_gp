@@ -1,6 +1,6 @@
 # Spectral clustering for GPs
 
-We borrow the net-win concept used in the work 'Clustering Using Pairwise Comparisons' proposed by R. Srikant to the
+We borrow the net-win concept used in the work 'Clustering Using Pairwise Comparisons' proposed by R. Srikant and apply it to the
 problem of extracting gradual patterns (GPs). In order to mine for GPs, each feature yields 2 gradual items which we use
 to construct a ranking matrix that compares rows/objects to one another (i.e., (r1,r2), (r1,r3), (r1,r4), (r2,r3), (r2,r4),
 (r3,r4)).
