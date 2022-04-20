@@ -13,8 +13,9 @@ Description:
 """
 
 import sys
+import so4gp
 from optparse import OptionParser
-from .shared import config as cfg
+from src import config as cfg
 
 if __name__ == "__main__":
     if not sys.argv:
@@ -71,10 +72,10 @@ if __name__ == "__main__":
 
     import time
     import tracemalloc
-    import cluster_gp as cgp
-    from .shared.profile import Profile
+    from src import cluster_gp as cgp
 
     # CLU-GRAD
+    Profile = so4gp.Profile
     start = time.time()
     tracemalloc.start()
     res_text = cgp.execute(filePath, minSup, algChoice, eProb, itMax, numCores)

@@ -309,10 +309,8 @@ def estimate_support_v2(score_vectors, a_mat):
 
 
 # DO NOT ADD TO PyPi Package
-from .shared.profile import Profile
-
-
 def execute(f_path, min_supp,  algorithm, e_prob, max_iter, cores):
+    Profile = sgp.Profile
     try:
         if cores > 1:
             num_cores = cores
