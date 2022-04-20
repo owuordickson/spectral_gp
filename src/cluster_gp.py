@@ -6,7 +6,7 @@
 
 @license: MIT
 
-@version: 0.1.0
+@version: 0.1.2
 
 @email: owuordickson@gmail.com
 
@@ -41,7 +41,6 @@ from ypstruct import structure
 from sklearn.cluster import KMeans, MiniBatchKMeans, SpectralClustering, AgglomerativeClustering
 
 import so4gp as sgp
-from .shared.profile import Profile
 
 # Configuration Parameters
 MIN_SUPPORT = 0.5
@@ -310,6 +309,9 @@ def estimate_support_v2(score_vectors, a_mat):
 
 
 # DO NOT ADD TO PyPi Package
+from .shared.profile import Profile
+
+
 def execute(f_path, min_supp,  algorithm, e_prob, max_iter, cores):
     try:
         if cores > 1:
