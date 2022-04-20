@@ -1,7 +1,7 @@
 import so4gp as sgp
 
 
-def execute(f_path, min_supp, cores,  evaporation_factor, max_iteration, max_evaluations):
+def execute(f_path, min_supp, cores,  evaporation_factor, max_iteration):
     Profile = sgp.Profile
     try:
         if cores > 1:
@@ -10,8 +10,7 @@ def execute(f_path, min_supp, cores,  evaporation_factor, max_iteration, max_eva
             num_cores = Profile.get_num_cores()
 
         d_set = sgp.DataGP(f_path, min_supp)
-        out_json, list_gp = sgp.acogps(f_path, min_supp, evaporation_factor, max_iteration, max_evaluations,
-                                       return_gps=True)
+        out_json, list_gp = sgp.acogps(f_path, min_supp, evaporation_factor, max_iteration, return_gps=True)
 
         wr_line = "Algorithm: ACO-GRAANK (v4.0)\n"
         wr_line += "No. of (dataset) attributes: " + str(d_set.col_count) + '\n'

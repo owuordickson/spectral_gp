@@ -40,7 +40,7 @@ if __name__ == "__main__":
         optparser.add_option('-a', '--algorithmChoice',
                              dest='algChoice',
                              help='select algorithm for clustering',
-                             default=cfg.CLUSTER_ALGORITHM,
+                             default=cfg.ALGORITHM,
                              type='string')
         optparser.add_option('-e', '--eProb',
                              dest='eProb',
@@ -60,7 +60,7 @@ if __name__ == "__main__":
         (options, args) = optparser.parse_args()
 
         if options.file is None:
-            print("Usage: $python3 main.src -f filename.csv -a 'kmeans'")
+            print("Usage: $python3 main.src -f filename.csv -a 'clugrad'")
             sys.exit('System will exit')
         else:
             filePath = options.file
@@ -72,19 +72,50 @@ if __name__ == "__main__":
 
     import time
     import tracemalloc
-    from pkg_algorithms import cluster_gp as cgp
-
-    # CLU-GRAD
+    from pkg_algorithms import clu_grad, aco_grad, graank
     Profile = so4gp.Profile
-    start = time.time()
-    tracemalloc.start()
-    res_text = cgp.execute(filePath, minSup, algChoice, eProb, itMax, numCores)
-    snapshot = tracemalloc.take_snapshot()
-    end = time.time()
 
-    wr_text = ("Run-time: " + str(end - start) + " seconds\n")
-    wr_text += (Profile.get_quick_mem_use(snapshot) + "\n")
-    wr_text += str(res_text)
-    f_name = str('res_cgp_v1' + str(end).replace('.', '', 1) + '.txt')
-    Profile.write_file(wr_text, f_name, wr=False)
-    print(wr_text)
+    if algChoice == 'clugrad':
+        # CLU-GRAD
+        start = time.time()
+        tracemalloc.start()
+        res_text = clu_grad.execute(filePath, minSup, eProb, itMax, numCores)
+        snapshot = tracemalloc.take_snapshot()
+        end = time.time()
+
+        wr_text = ("Run-time: " + str(end - start) + " seconds\n")
+        wr_text += (Profile.get_quick_mem_use(snapshot) + "\n")
+        wr_text += str(res_text)
+        f_name = str('res_cgp_v1' + str(end).replace('.', '', 1) + '.txt')
+        Profile.write_file(wr_text, f_name, wr=False)
+        print(wr_text)
+    elif algChoice == 'acograd':
+        # ACO-GRAANK
+        start = time.time()
+        tracemalloc.start()
+        res_text = aco_grad.execute(filePath, minSup, numCores, cfg.EVAPORATION_FACTOR, cfg.MAX_ITERATIONS)
+        snapshot = tracemalloc.take_snapshot()
+        end = time.time()
+
+        wr_text = ("Run-time: " + str(end - start) + " seconds\n")
+        wr_text += (Profile.get_quick_mem_use(snapshot) + "\n")
+        wr_text += str(res_text)
+        f_name = str('res_aco_v1' + str(end).replace('.', '', 1) + '.txt')
+        Profile.write_file(wr_text, f_name, wr=False)
+        print(wr_text)
+    elif algChoice == 'graank':
+        # GRAANK
+        start = time.time()
+        tracemalloc.start()
+        res_text = graank.execute(filePath, minSup, numCores)
+        snapshot = tracemalloc.take_snapshot()
+        end = time.time()
+
+        wr_text = ("Run-time: " + str(end - start) + " seconds\n")
+        wr_text += (Profile.get_quick_mem_use(snapshot) + "\n")
+        wr_text += str(res_text)
+        f_name = str('res_graank' + str(end).replace('.', '', 1) + '.txt')
+        Profile.write_file(wr_text, f_name, wr=False)
+        print(wr_text)
+    else:
+        print("Invalid Algorithm Choice!")

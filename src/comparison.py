@@ -1,4 +1,4 @@
-from .pkg_algorithms import cluster_gp as cgp
+from .pkg_algorithms import clu_grad as cgp
 from . import config as cfg
 import so4gp as sgp
 

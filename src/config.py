@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Configurations for Gradual Patterns:
+ALGORITHM = 'clugrad'  # clugrad or acograd or graank
 MIN_SUPPORT = 0.5
 CPU_CORES = 4  # Depends on your computer
 
@@ -14,6 +15,11 @@ DATASET = '../data/breast_cancer.csv'
 
 # Uncomment for Terminal:
 # DATASET = "data/DATASET.csv"
+
+# ACO-GRAD Configurations:
+EVAPORATION_FACTOR = 0.5
+MAX_ITERATIONS = 10
+MAX_EVALUATIONS = 100
 
 # Clustering Configurations
 CLUSTER_ALGORITHM = 'kmeans'  # selects algorithm to be used for clustering the net-win matrices

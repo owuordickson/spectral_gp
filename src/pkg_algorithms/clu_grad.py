@@ -49,8 +49,8 @@ ERASURE_PROBABILITY = 0.5  # determines the number of pairs to be ignored
 SCORE_VECTOR_ITERATIONS = 10  # maximum iteration for score vector estimation
 
 
-def clugps(f_path, min_sup=MIN_SUPPORT, algorithm=CLUSTER_ALGORITHM, e_probability=ERASURE_PROBABILITY,
-           sv_max_iter=SCORE_VECTOR_ITERATIONS, return_gps=False, testing=False):
+def clugps(f_path, min_sup=MIN_SUPPORT, e_probability=ERASURE_PROBABILITY,
+           sv_max_iter=SCORE_VECTOR_ITERATIONS, algorithm=CLUSTER_ALGORITHM, return_gps=False, testing=False):
     # Create a DataGP object
     d_gp = sgp.DataGP(f_path, min_sup)
     """:type d_gp: DataGP"""
@@ -309,7 +309,7 @@ def estimate_support_v2(score_vectors, a_mat):
 
 
 # DO NOT ADD TO PyPi Package
-def execute(f_path, min_supp,  algorithm, e_prob, max_iter, cores):
+def execute(f_path, min_supp, e_prob, max_iter, cores):
     Profile = sgp.Profile
     try:
         if cores > 1:
@@ -317,7 +317,7 @@ def execute(f_path, min_supp,  algorithm, e_prob, max_iter, cores):
         else:
             num_cores = Profile.get_num_cores()
 
-        out = clugps(f_path, min_supp, algorithm, e_prob, max_iter, testing=True)
+        out = clugps(f_path, min_supp, e_prob, max_iter, testing=True)
         list_gp = out.estimated_gps
 
         wr_line = "Algorithm: Clu-GRAD (v1.2)\n"
