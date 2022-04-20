@@ -23,12 +23,12 @@ GIs; for example, column age yields GI age+ or age-. For example given a data se
 10 objects. A GP may take the form: {age+, salary-} with a support of 0.8. This implies that 8 out of 10 objects have
 the values of column age 'increasing' and column 'salary' decreasing.
 
-We borrow the net-wins concept used in the work 'Clustering Using Pairwise Comparisons' proposed by R. Srikant to the
+We borrow the net-win concept used in the work 'Clustering Using Pairwise Comparisons' proposed by R. Srikant to the
 problem of extracting gradual patterns (GPs). In order to mine for GPs, each feature yields 2 gradual items which we use
 to construct a bitmap matrix comparing each row to each other (i.e., (r1,r2), (r1,r3), (r1,r4), (r2,r3), (r2,r4),
 (r3,r4)).
 
-In this approach, we convert the bitmap matrices into 'net wins matrices'. Finally, we apply spectral clustering to
+In this approach, we convert the bitmap matrices into 'net-win matrices'. Finally, we apply spectral clustering to
 determine which gradual items belong to the same group based on the similarity of gradual dependency. Gradual items in
 the same cluster should have almost similar score vector.
 
