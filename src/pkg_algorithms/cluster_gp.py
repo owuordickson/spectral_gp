@@ -41,16 +41,11 @@ from ypstruct import structure
 from sklearn.cluster import KMeans, MiniBatchKMeans, SpectralClustering, AgglomerativeClustering
 
 import so4gp as sgp
-
-# Configuration Parameters
-MIN_SUPPORT = 0.5
-CLUSTER_ALGORITHM = 'kmeans'  # selects algorithm to be used for clustering the net-win matrices
-ERASURE_PROBABILITY = 0.5  # determines the number of pairs to be ignored
-SCORE_VECTOR_ITERATIONS = 10  # maximum iteration for score vector estimation
+from . import config as cfg
 
 
-def clugps(f_path=None, min_sup=MIN_SUPPORT, algorithm=CLUSTER_ALGORITHM, e_probability=ERASURE_PROBABILITY,
-           sv_max_iter=SCORE_VECTOR_ITERATIONS, return_gps=False, testing=False):
+def clugps(f_path, min_sup=cfg.MIN_SUPPORT, algorithm=cfg.CLUSTER_ALGORITHM, e_probability=cfg.ERASURE_PROBABILITY,
+           sv_max_iter=cfg.SCORE_VECTOR_ITERATIONS, return_gps=False, testing=False):
     # Create a DataGP object
     d_gp = sgp.DataGP(f_path, min_sup)
     """:type d_gp: DataGP"""
