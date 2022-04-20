@@ -1,4 +1,5 @@
-from .pkg_algorithms import cluster_gp as cgp, config as cfg
+from .pkg_algorithms import cluster_gp as cgp
+from . import config as cfg
 import so4gp as sgp
 
 

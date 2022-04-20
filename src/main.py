@@ -15,7 +15,7 @@ Description:
 import sys
 import so4gp
 from optparse import OptionParser
-from .pkg_algorithms import config as cfg
+from . import config as cfg
 
 if __name__ == "__main__":
     if not sys.argv:
