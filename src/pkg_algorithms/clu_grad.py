@@ -113,7 +113,7 @@ def construct_matrices(d_gp, e):
     lst_gis = []
     r_mat_idx = []
     s_mat = []
-    a_mat = np.zeros(shape=(n, pair_count))
+    a_mat = np.zeros(shape=(n, pair_count), dtype=np.byte)
 
     # Construct A matrix
     for idx in range(pair_count):
