@@ -10,7 +10,11 @@ CPU_CORES = 4  # Depends on your computer
 
 # Uncomment for Main:
 # DATASET = "../data/DATASET.csv"
-DATASET = '../data/breast_cancer.csv'
+# DATASET = '../data/breast_cancer.csv'
+# DATASET = '../data/air_quality.csv'
+DATASET = '../data/power_consumption19k.csv'
+# DATASET = '../data/c2k.csv'
+# DATASET = '../data/directio15k.csv'
 
 
 # Uncomment for Terminal:
