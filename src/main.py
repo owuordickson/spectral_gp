@@ -79,8 +79,8 @@ if __name__ == "__main__":
         # CLU-GRAD
         start = time.time()
         tracemalloc.start()
-        # res_text = clu_grad.execute(filePath, minSup, eProb, itMax, numCores)
-        res_text = cluster_gps_v1.execute(filePath, minSup, eProb, itMax, numCores)
+        res_text = clu_grad.execute(filePath, minSup, eProb, itMax, numCores)
+        # res_text = cluster_gps_v1.execute(filePath, minSup, eProb, itMax, numCores)
         snapshot = tracemalloc.take_snapshot()
         end = time.time()
 

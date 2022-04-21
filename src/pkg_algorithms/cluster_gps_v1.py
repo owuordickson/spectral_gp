@@ -231,13 +231,14 @@ def infer_gps(clusters, d_gp, r_mat, max_iter):
             # print("\n")
 
             # 4. Infer GPs from the clusters
-            gp = sgp.GP()
-            for gi in cluster_gis:
-                gp.add_gradual_item(gi)
-            gp.set_support(est_sup)
-            patterns.append(gp)
-            str_patterns.append(gp.print(d_gp.titles))
-            # print(gp.print(d_gp.titles))
+            if est_sup >= d_gp.thd_supp:
+                gp = sgp.GP()
+                for gi in cluster_gis:
+                    gp.add_gradual_item(gi)
+                gp.set_support(est_sup)
+                patterns.append(gp)
+                str_patterns.append(gp.print(d_gp.titles))
+                # print(gp.print(d_gp.titles))
     return str_patterns, patterns
 
 
