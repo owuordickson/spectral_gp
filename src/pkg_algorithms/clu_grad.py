@@ -103,7 +103,8 @@ def construct_matrices(d_gp, e):
     n = d_gp.row_count
     pair_count = int(n * (n - 1) * 0.5)
     p = 1 - e
-    sample_idx = random.sample(range(pair_count), int(p*pair_count))  # normal distribution
+    # sample_idx = random.sample(range(pair_count), int(p*pair_count))  # normal distribution
+    sample_idx = np.random.choice(pair_count, int(p*pair_count), replace=False)
     # sample_idx = [0, 9, 6, 7, 3]  # For testing
     # print(sample_idx)
 

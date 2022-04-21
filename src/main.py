@@ -72,14 +72,15 @@ if __name__ == "__main__":
 
     import time
     import tracemalloc
-    from pkg_algorithms import clu_grad, aco_grad, graank
+    from pkg_algorithms import clu_grad, aco_grad, graank, cluster_gps_v1
     Profile = so4gp.Profile
 
     if algChoice == 'clugrad':
         # CLU-GRAD
         start = time.time()
         tracemalloc.start()
-        res_text = clu_grad.execute(filePath, minSup, eProb, itMax, numCores)
+        # res_text = clu_grad.execute(filePath, minSup, eProb, itMax, numCores)
+        res_text = cluster_gps_v1.execute(filePath, minSup, eProb, itMax, numCores)
         snapshot = tracemalloc.take_snapshot()
         end = time.time()
 
