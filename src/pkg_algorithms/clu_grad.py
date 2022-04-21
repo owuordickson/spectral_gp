@@ -108,12 +108,6 @@ def construct_matrices(d_gp, e):
     # sample_idx = [0, 9, 6, 7, 3]  # For testing
     # print(sample_idx)
 
-    # mat = np.arange(10)
-    # choice = np.random.choice(range(mat.shape[0]), size=(int(mat.shape[0] / 2),), replace=False)
-    # ind = np.zeros(mat.shape[0], dtype=bool)
-    # ind[choice] = True
-    # rest = mat[~ind]
-
     # Compute gradual relation
     attr_data = d_gp.data.T
     lst_gis = []
@@ -171,7 +165,7 @@ def construct_matrices(d_gp, e):
     res.gradual_items = np.array(lst_gis)
     res.r_idx = np.array(r_mat_idx, dtype=object)
     res.nwin_matrix = np.array(s_mat)
-    res.a_matrix = a_mat
+    a_mat = None  # s.a_matrix = a_mat
     return res
 
 
@@ -216,7 +210,7 @@ def infer_gps(clusters, d_gp, mat_obj, max_iter):
     n = d_gp.row_count
     all_gis = mat_obj.gradual_items
     r_idx = mat_obj.r_idx
-    a_mat = mat_obj.a_matrix
+    # a_mat = mat_obj.a_matrix
 
     lst_indices = [np.where(clusters == element)[0] for element in np.unique(clusters)]
     # lst_indices = list([np.array([0, 5, 7])])  # Hard coded - for testing
@@ -299,6 +293,7 @@ def estimate_support(n, score_vectors):
 
 
 def estimate_support_v2(score_vectors, a_mat):
+    # Has a bug
     n = a_mat.shape[1]
     r_vec = np.ones(shape=(n,))
     for s_vec in score_vectors:
