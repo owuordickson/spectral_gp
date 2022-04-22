@@ -71,12 +71,9 @@ if __name__ == "__main__":
         numCores = options.numCores
 
     import time
-    from pkg_algorithms import clu_grad, aco_grad, graank, cluster_gps_v1
-    Profile = so4gp.Profile
-
     from memory_profiler import memory_usage
-    mem_usage = memory_usage((clu_grad.execute, (filePath, minSup, eProb, itMax, numCores)))
-    print(mem_usage)
+    from pkg_algorithms import clu_grad, aco_grad, graank, cluster_gps_v1
+    Profile = so4gp.Profile  # TO BE DELETED
 
     if algChoice == 'clugrad':
         # CLU-GRAD
@@ -84,10 +81,10 @@ if __name__ == "__main__":
         res_text = clu_grad.execute(filePath, minSup, eProb, itMax, numCores)
         # res_text = cluster_gps_v1.execute(filePath, minSup, eProb, itMax, numCores)
         end = time.time()
-        # mem = (heap_status2.size - heap_status1.size) / 1000
+        mem_usage = memory_usage((clu_grad.execute, (filePath, minSup, eProb, itMax, numCores)))
 
         wr_text = ("Run-time: " + str(end - start) + " seconds\n")
-        # wr_text += ("Memory Usage After Creation Of Objects: " + str(mem) + " KiB\n")
+        wr_text += ("Memory Usage (MiB): " + str(mem_usage) + " \n")
         wr_text += str(res_text)
         f_name = str('res_clu' + str(end).replace('.', '', 1) + '.txt')
         Profile.write_file(wr_text, f_name, wr=False)
@@ -97,10 +94,10 @@ if __name__ == "__main__":
         start = time.time()
         res_text = aco_grad.execute(filePath, minSup, numCores, cfg.EVAPORATION_FACTOR, cfg.MAX_ITERATIONS)
         end = time.time()
-        # mem = (heap_status2.size - heap_status1.size) / 1000
+        mem_usage = memory_usage((aco_grad.execute, (filePath, minSup, numCores, cfg.EVAPORATION_FACTOR, cfg.MAX_ITERATIONS)))
 
         wr_text = ("Run-time: " + str(end - start) + " seconds\n")
-        # wr_text += ("Memory Usage After Creation Of Objects: " + str(mem) + " KiB\n")
+        wr_text += ("Memory Usage (MiB): " + str(mem_usage) + " \n")
         wr_text += str(res_text)
         f_name = str('res_aco' + str(end).replace('.', '', 1) + '.txt')
         Profile.write_file(wr_text, f_name, wr=False)
@@ -110,10 +107,10 @@ if __name__ == "__main__":
         start = time.time()
         res_text = graank.execute(filePath, minSup, numCores)
         end = time.time()
-        # mem = (heap_status2.size - heap_status1.size) / 1000
+        mem_usage = memory_usage((graank.execute, (filePath, minSup, numCores)))
 
         wr_text = ("Run-time: " + str(end - start) + " seconds\n")
-        # wr_text += ("Memory Usage After Creation Of Objects: " + str(mem) + " KiB\n")
+        wr_text += ("Memory Usage (MiB): " + str(mem_usage) + " \n")
         wr_text += str(res_text)
         f_name = str('res_graank' + str(end).replace('.', '', 1) + '.txt')
         Profile.write_file(wr_text, f_name, wr=False)
