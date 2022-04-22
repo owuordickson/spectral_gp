@@ -35,8 +35,8 @@ the same cluster should have almost similar score vector.
 """
 import json
 import math
-import random
 import numpy as np
+import dask.array as da
 from ypstruct import structure
 from sklearn.cluster import KMeans, MiniBatchKMeans, SpectralClustering, AgglomerativeClustering
 
@@ -103,7 +103,6 @@ def construct_matrices(d_gp, e):
     n = d_gp.row_count
     pair_count = int(n * (n - 1) * 0.5)
     p = 1 - e
-    # sample_idx = random.sample(range(pair_count), int(p*pair_count))  # normal distribution
     sample_idx = np.random.choice(pair_count, int(p*pair_count), replace=False)
     # sample_idx = [0, 9, 6, 7, 3]  # For testing
     # print(sample_idx)
@@ -113,12 +112,15 @@ def construct_matrices(d_gp, e):
     lst_gis = []
     r_mat_idx = []
     s_mat = []
-    a_mat = np.zeros(shape=(n, pair_count), dtype=np.byte)
+    # a_mat = np.zeros(shape=(n, pair_count), dtype=np.byte)
+    a_mat = da.zeros((n, pair_count), chunks=(1000, 1000))
 
     # Construct A matrix
     for idx in range(pair_count):
-        ei = np.zeros(shape=(n,)).T
-        ej = np.zeros(shape=(n,)).T
+        # ei = np.zeros(shape=(n,)).T
+        # ej = np.zeros(shape=(n,)).T
+        ei = da.zeros(n, chunks=1000).T
+        ej = da.zeros(n, chunks=1000).T
         g, i_g = get_pair_partition(n, idx)
         i = (g - 1)
         j = (g + i_g)
@@ -129,7 +131,8 @@ def construct_matrices(d_gp, e):
     # Construct R matrix from data set
     for col in d_gp.attr_cols:
         col_data = np.array(attr_data[col], dtype=float)
-        r_vec = np.zeros(shape=(pair_count,))
+        # r_vec = np.zeros(shape=(pair_count,), dtype=np.byte)
+        r_vec = da.zeros(pair_count, chunks=1000)
         r_idx_pos = []
         r_idx_neg = []
         for idx in sample_idx:
@@ -149,7 +152,8 @@ def construct_matrices(d_gp, e):
 
         if np.count_nonzero(r_vec) > 0:
             # Compute net-win vector
-            s_vec = np.dot(r_vec, a_mat.T)
+            # s_vec = np.dot(r_vec, a_mat.T)
+            s_vec = r_vec.dot(a_mat.T).compute()
             s_vec[s_vec > 0] = 1
             s_vec[s_vec < 0] = -1
 
@@ -165,7 +169,8 @@ def construct_matrices(d_gp, e):
     res.gradual_items = np.array(lst_gis)
     res.r_idx = np.array(r_mat_idx, dtype=object)
     res.nwin_matrix = np.array(s_mat)
-    a_mat = None  # s.a_matrix = a_mat
+    # s.a_matrix = a_mat
+    # print(r_mat_idx)
     return res
 
 
