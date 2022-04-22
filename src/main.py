@@ -71,28 +71,23 @@ if __name__ == "__main__":
         numCores = options.numCores
 
     import time
-    # import tracemalloc
-    import guppy
     from pkg_algorithms import clu_grad, aco_grad, graank, cluster_gps_v1
     Profile = so4gp.Profile
-    from guppy import hpy
-    heap = hpy()
-    heap.setref()
-    heap_status1 = heap.heap()
+
+    from memory_profiler import memory_usage
+    mem_usage = memory_usage((clu_grad.execute, (filePath, minSup, eProb, itMax, numCores)))
+    print(mem_usage)
 
     if algChoice == 'clugrad':
         # CLU-GRAD
         start = time.time()
-        # tracemalloc.start()
         res_text = clu_grad.execute(filePath, minSup, eProb, itMax, numCores)
         # res_text = cluster_gps_v1.execute(filePath, minSup, eProb, itMax, numCores)
-        # snapshot = tracemalloc.take_snapshot()
         end = time.time()
-        heap_status2 = heap.heap()
+        # mem = (heap_status2.size - heap_status1.size) / 1000
 
         wr_text = ("Run-time: " + str(end - start) + " seconds\n")
-        # wr_text += (Profile.get_quick_mem_use(snapshot) + "\n")
-        wr_text += ("Memory Usage After Creation Of Objects :" + str(heap_status2.size - heap_status1.size) + " bytes\n")
+        # wr_text += ("Memory Usage After Creation Of Objects: " + str(mem) + " KiB\n")
         wr_text += str(res_text)
         f_name = str('res_clu' + str(end).replace('.', '', 1) + '.txt')
         Profile.write_file(wr_text, f_name, wr=False)
@@ -100,15 +95,12 @@ if __name__ == "__main__":
     elif algChoice == 'acograd':
         # ACO-GRAANK
         start = time.time()
-        # tracemalloc.start()
         res_text = aco_grad.execute(filePath, minSup, numCores, cfg.EVAPORATION_FACTOR, cfg.MAX_ITERATIONS)
-        # snapshot = tracemalloc.take_snapshot()
         end = time.time()
-        heap_status2 = heap.heap()
+        # mem = (heap_status2.size - heap_status1.size) / 1000
 
         wr_text = ("Run-time: " + str(end - start) + " seconds\n")
-        # wr_text += (Profile.get_quick_mem_use(snapshot) + "\n")
-        wr_text += ("Memory Usage After Creation Of Objects: " + str(heap_status2.size - heap_status1.size) + " bytes\n")
+        # wr_text += ("Memory Usage After Creation Of Objects: " + str(mem) + " KiB\n")
         wr_text += str(res_text)
         f_name = str('res_aco' + str(end).replace('.', '', 1) + '.txt')
         Profile.write_file(wr_text, f_name, wr=False)
@@ -116,15 +108,12 @@ if __name__ == "__main__":
     elif algChoice == 'graank':
         # GRAANK
         start = time.time()
-        # tracemalloc.start()
         res_text = graank.execute(filePath, minSup, numCores)
-        # snapshot = tracemalloc.take_snapshot()
         end = time.time()
-        heap_status2 = heap.heap()
+        # mem = (heap_status2.size - heap_status1.size) / 1000
 
         wr_text = ("Run-time: " + str(end - start) + " seconds\n")
-        # wr_text += (Profile.get_quick_mem_use(snapshot) + "\n")
-        wr_text += ("Memory Usage After Creation Of Objects: " + str(heap_status2.size - heap_status1.size) + " bytes\n")
+        # wr_text += ("Memory Usage After Creation Of Objects: " + str(mem) + " KiB\n")
         wr_text += str(res_text)
         f_name = str('res_graank' + str(end).replace('.', '', 1) + '.txt')
         Profile.write_file(wr_text, f_name, wr=False)
