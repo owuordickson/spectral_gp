@@ -2,7 +2,6 @@ import so4gp as sgp
 
 
 def execute(f_path, min_supp, cores, eq=False):
-    Profile = sgp.Profile
     try:
         d_set = sgp.DataGP(f_path, min_supp)
         out_json, list_gp = sgp.graank(f_path, min_supp, eq, return_gps=True)
@@ -10,7 +9,7 @@ def execute(f_path, min_supp, cores, eq=False):
         if cores > 1:
             num_cores = cores
         else:
-            num_cores = Profile.get_num_cores()
+            num_cores = sgp.get_num_cores()
 
         wr_line = "Algorithm: GRAANK \n"
         wr_line += "No. of (dataset) attributes: " + str(d_set.col_count) + '\n'

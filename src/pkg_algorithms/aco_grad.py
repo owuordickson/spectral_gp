@@ -2,12 +2,11 @@ import so4gp as sgp
 
 
 def execute(f_path, min_supp, cores,  evaporation_factor, max_iteration):
-    Profile = sgp.Profile
     try:
         if cores > 1:
             num_cores = cores
         else:
-            num_cores = Profile.get_num_cores()
+            num_cores = sgp.get_num_cores()
 
         d_set = sgp.DataGP(f_path, min_supp)
         out_json, list_gp = sgp.acogps(f_path, min_supp, evaporation_factor, max_iteration, return_gps=True)

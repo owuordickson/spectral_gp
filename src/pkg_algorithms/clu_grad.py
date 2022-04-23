@@ -36,7 +36,7 @@ the same cluster should have almost similar score vector.
 import json
 import math
 import numpy as np
-import dask.array as da
+# import dask.array as da
 from ypstruct import structure
 from sklearn.cluster import KMeans, MiniBatchKMeans, SpectralClustering, AgglomerativeClustering
 
@@ -312,12 +312,11 @@ def estimate_support_v2(score_vectors, a_mat):
 
 # DO NOT ADD TO PyPi Package
 def execute(f_path, min_supp, e_prob, max_iter, cores):
-    Profile = sgp.Profile
     try:
         if cores > 1:
             num_cores = cores
         else:
-            num_cores = Profile.get_num_cores()
+            num_cores = sgp.get_num_cores()
 
         out = clugps(f_path, min_supp, e_prob, max_iter, testing=True)
         list_gp = out.estimated_gps
