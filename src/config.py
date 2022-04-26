@@ -27,5 +27,5 @@ MAX_ITERATIONS = 500
 
 # Clustering Configurations
 CLUSTER_ALGORITHM = 'kmeans'  # selects algorithm to be used for clustering the net-win matrices
-ERASURE_PROBABILITY = 0.5  # determines the number of pairs to be ignored
+ERASURE_PROBABILITY = 0.75  # determines the number of pairs to be ignored
 SCORE_VECTOR_ITERATIONS = 2  # maximum iteration for score vector estimation
