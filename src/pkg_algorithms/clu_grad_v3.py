@@ -6,13 +6,13 @@
 
 @license: MIT
 
-@version: 0.1.2
+@version: 0.1.3
 
 @email: owuordickson@gmail.com
 
 @created: 01 March 2022
 
-@modified: 17 March 2022
+@modified: 25 April 2022
 
 Clustering Gradual Items
 ------------------------
@@ -72,8 +72,7 @@ def clugps(f_path, min_sup=MIN_SUPPORT, e_probability=ERASURE_PROBABILITY,
     # 1a. Clustering using KMeans or MiniBatchKMeans or SpectralClustering or AgglomerativeClustering
     y_pred = predict_clusters(s_matrix_approx, r, algorithm=algorithm)
     # 1b. Infer GPs
-    max_iter = sv_max_iter
-    str_gps, gps = infer_gps(y_pred, d_gp, mat_obj, max_iter)
+    str_gps, gps = infer_gps(y_pred, d_gp, mat_obj, sv_max_iter)
     # print(str_gps)
 
     # Output - DO NOT ADD TO PyPi Package
@@ -101,77 +100,72 @@ def construct_matrices(d_gp, e):
 
     # Sample pairs
     n = d_gp.row_count
-    pair_count = int(n * (n - 1) * 0.5)
-    p = 1 - e
-    sample_idx = np.random.choice(pair_count, int(p*pair_count), replace=False)
+    total_pair_count = int(n * (n - 1) * 0.5)
+    prob = 1 - e
+    sample_idx = np.random.choice(total_pair_count, int(prob*total_pair_count), replace=False)
     # sample_idx = np.array([0, 9, 6, 7, 3])  # For testing
-    # print(sample_idx)
+    pair_count = sample_idx.shape[0]
 
     # Compute gradual relation
     attr_data = d_gp.data.T
-    lst_gis = []
-    r_mat_idx = []
-    s_mat = []
-    a_mat = np.zeros(shape=(n, pair_count), dtype=np.byte)  # HIGH MEMORY
-    # a_mat = da.zeros((n, pair_count), chunks=(1000, 1000))
+    lst_gis = []  # List of GIs
+    s_mat = []  # S-Matrix (made up of S-Vectors)
+    cum_wins = []
+    get_ij = np.zeros((pair_count, 2), dtype=np.int)
 
-    # Construct A matrix
-    for idx in range(pair_count):
-        ei = np.zeros(shape=(n,)).T
-        ej = np.zeros(shape=(n,)).T
-        # ei = da.zeros(n, chunks=1000).T
-        # ej = da.zeros(n, chunks=1000).T
+    # Compute i and j from sampled indices
+    for k in range(pair_count):
+        idx = sample_idx[k]
         g, i_g = get_pair_partition(n, idx)
         i = (g - 1)
         j = (g + i_g)
-        ei[i] = 1
-        ej[j] = 1
-        a_mat[:, idx] = ei - ej  # HIGH MEMORY
+        get_ij[k][0] = i
+        get_ij[k][1] = j
 
     # Construct R matrix from data set
     for col in d_gp.attr_cols:
-        col_data = np.array(attr_data[col], dtype=float)
-        r_vec = np.zeros(shape=(pair_count,), dtype=np.byte)  # HIGH MEMORY
-        # r_vec = da.zeros(pair_count, chunks=1000)
-        r_idx_pos = []
-        r_idx_neg = []
-        for idx in sample_idx:
-            g, i_g = get_pair_partition(n, idx)
-            i = (g - 1)
-            j = (g + i_g)
+        col_data = np.array(attr_data[col], dtype=np.float)
+        s_vec = np.zeros((n,), dtype=np.int)
+        temp_cum_wins = np.zeros((pair_count, ), dtype=np.int)
 
-            # Construct R vector
+        for k in range(pair_count):
+            i = get_ij[k][0]
+            j = get_ij[k][1]
+            # print(str(i) + "," + str(j))
+
+            # We know the size of the S-Matrix/Vector, so we can identify which indices to increment for every idx
+            # Construct S-vector (net-win vector)
             if col_data[i] < col_data[j]:
-                r_vec[idx] = 1
-                r_idx_pos.append([idx, 1])  # For estimating score-vector
-                r_idx_neg.append([idx, -1])  # For estimating score-vector
+                s_vec[i] += 1  # i wins
+                s_vec[j] += -1  # j loses
+                temp_cum_wins[k] = 1  # For estimation score-vector
             elif col_data[i] > col_data[j]:
-                r_vec[idx] = -1
-                r_idx_pos.append([idx, -1])  # For estimating score-vector
-                r_idx_neg.append([idx, 1])  # For estimating score-vector
+                s_vec[i] += -1  # i loses
+                s_vec[j] += 1  # j wins
+                temp_cum_wins[k] = -1  # For estimation score-vector
 
-        if np.count_nonzero(r_vec) > 0:
-            # Compute net-win vector
-            s_vec = np.dot(r_vec, a_mat.T)  # TOO MUCH MEMORY FOR COMPUTATION
-            # s_vec = r_vec.dot(a_mat.T).compute()
-            s_vec[s_vec > 0] = 1
-            s_vec[s_vec < 0] = -1
+        # Normalize S-vector
+        if np.count_nonzero(s_vec) > 0:
+            s_vec[s_vec > 0] = 1  # Normalize net wins
+            s_vec[s_vec < 0] = -1  # Normalize net loses
 
-            r_mat_idx.append(r_idx_pos)
-            s_mat.append(s_vec)
             lst_gis.append(sgp.GI(col, '+'))
+            cum_wins.append(temp_cum_wins)
+            s_mat.append(s_vec)
 
-            r_mat_idx.append(r_idx_neg)
-            s_mat.append(-s_vec)
             lst_gis.append(sgp.GI(col, '-'))
+            cum_wins.append(-temp_cum_wins)
+            s_mat.append(-s_vec)
 
     res = structure()
     res.gradual_items = np.array(lst_gis)
-    res.r_idx = np.array(r_mat_idx, dtype=object)
+    res.cum_wins = np.array(cum_wins)
     res.nwin_matrix = np.array(s_mat)
-    # s.a_matrix = a_mat
-    # print(r_mat_idx)
+    res.ij = get_ij
+    # print(get_ij)
+    # print(np.array(cum_wins).T)
     # print(np.array(s_mat))
+    # print(sample_idx)
     return res
 
 
@@ -215,8 +209,8 @@ def infer_gps(clusters, d_gp, mat_obj, max_iter):
 
     n = d_gp.row_count
     all_gis = mat_obj.gradual_items
-    r_idx = mat_obj.r_idx
-    # a_mat = mat_obj.a_matrix
+    cum_wins = mat_obj.cum_wins
+    ij_cols = mat_obj.ij
 
     lst_indices = [np.where(clusters == element)[0] for element in np.unique(clusters)]
     # lst_indices = list([np.array([0, 5, 7])])  # Hard coded - for testing
@@ -225,17 +219,16 @@ def infer_gps(clusters, d_gp, mat_obj, max_iter):
         if grp_idxs.size > 1:
             # 1. Retrieve all cluster-pairs and the corresponding GIs
             cluster_gis = all_gis[grp_idxs]
-            cluster_ridxs = r_idx[grp_idxs]
+            cluster_cum_wins = cum_wins[grp_idxs]  # All the rows of selected groups
 
             # 2. Compute score vector from R matrix
             score_vectors = []  # Approach 2
-            for idxs in cluster_ridxs:  # Approach 2
-                temp = estimate_score_vector(n, idxs, max_iter)
+            for c_win in cluster_cum_wins:
+                temp = estimate_score_vector(n, c_win, ij_cols, max_iter)
                 score_vectors.append(temp)
 
             # 3. Estimate support
             est_sup = estimate_support(n, score_vectors)
-            # est_sup = estimate_support_v2(score_vectors, a_mat)  # Has a bug
 
             # 4. Infer GPs from the clusters
             if est_sup >= d_gp.thd_supp:
@@ -249,30 +242,30 @@ def infer_gps(clusters, d_gp, mat_obj, max_iter):
     return str_patterns, patterns
 
 
-def estimate_score_vector(n, r_idxs, max_iter):
+def estimate_score_vector(n, c_wins, arr_ij, max_iter):
     # Estimate score vector from pairs
     score_vector = np.ones(shape=(n,))
 
     # Construct a win-matrix
     temp_vec = np.zeros(shape=(n,))
+    pair_count = arr_ij.shape[0]
+    # print(c_wins)
 
     # Compute score vector
     for k in range(max_iter):
         if np.count_nonzero(score_vector == 0) > 1:
             break
         else:
-            # for idx in range(r_mat.shape[0]):
-            for i_obj in r_idxs:
-                idx = i_obj[0]
-                pr_val = i_obj[1]
-                g, i_g = get_pair_partition(n, idx)
-                i = (g - 1)
-                j = (g + i_g)
-                if pr_val >= 1:
+            for pr in range(pair_count):
+                pr_val = c_wins[pr]
+                i = arr_ij[pr][0]
+                j = arr_ij[pr][1]
+                # print(str(i)+","+str(j)+": "+str(pr_val))
+                if pr_val == 1:
                     log = math.log(math.exp(score_vector[i]) / (math.exp(score_vector[i]) + math.exp(score_vector[j])),
                                    10)
                     temp_vec[i] += pr_val * log
-                elif pr_val >= -1:
+                elif pr_val == -1:
                     log = math.log(math.exp(score_vector[j]) / (math.exp(score_vector[i]) + math.exp(score_vector[j])),
                                    10)
                     temp_vec[j] += -pr_val * log
@@ -298,19 +291,6 @@ def estimate_support(n, score_vectors):
     return est_sup
 
 
-def estimate_support_v2(score_vectors, a_mat):
-    # Has a bug
-    n = a_mat.shape[1]
-    r_vec = np.ones(shape=(n,))
-    for s_vec in score_vectors:
-        temp_vec = np.dot(s_vec, a_mat)
-        temp_vec[temp_vec > 0] = 1
-        temp_vec[temp_vec < 0] = 0
-        r_vec = np.multiply(r_vec, temp_vec)
-    est_sup = np.sum(r_vec) / (n * (n - 1) / 2)
-    return est_sup
-
-
 # DO NOT ADD TO PyPi Package
 def execute(f_path, min_supp, e_prob, max_iter, cores):
     try:
@@ -322,7 +302,7 @@ def execute(f_path, min_supp, e_prob, max_iter, cores):
         out = clugps(f_path, min_supp, e_prob, max_iter, testing=True)
         list_gp = out.estimated_gps
 
-        wr_line = "Algorithm: Clu-GRAD (v1.2)\n"
+        wr_line = "Algorithm: Clu-GRAD (v1.3)\n"
         wr_line += "No. of (dataset) attributes: " + str(out.col_count) + '\n'
         wr_line += "No. of (dataset) tuples: " + str(out.row_count) + '\n'
         wr_line += "Erasure probability: " + str(out.e_prob) + '\n'
