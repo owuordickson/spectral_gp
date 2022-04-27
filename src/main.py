@@ -51,7 +51,7 @@ if __name__ == "__main__":
                              dest='itMax',
                              help='maximum iteration for score vector estimation',
                              default=cfg.SCORE_VECTOR_ITERATIONS,
-                             type='float')
+                             type='int')
         optparser.add_option('-c', '--cores',
                              dest='numCores',
                              help='number of cores',
@@ -92,7 +92,8 @@ if __name__ == "__main__":
         start = time.time()
         res_text = aco_grad.execute(filePath, minSup, numCores, cfg.EVAPORATION_FACTOR, cfg.MAX_ITERATIONS)
         end = time.time()
-        mem_usage = memory_usage((aco_grad.execute, (filePath, minSup, numCores, cfg.EVAPORATION_FACTOR, cfg.MAX_ITERATIONS)))
+        mem_usage = memory_usage((aco_grad.execute, (filePath, minSup, numCores, cfg.EVAPORATION_FACTOR,
+                                                     cfg.MAX_ITERATIONS)))
 
         wr_text = ("Run-time: " + str(end - start) + " seconds\n")
         wr_text += ("Memory Usage (MiB): " + str(mem_usage) + " \n")
