@@ -85,7 +85,7 @@ if __name__ == "__main__":
         wr_text += ("Memory Usage (MiB): " + str(mem_usage) + " \n")
         wr_text += str(res_text)
         f_name = str('res_clu' + str(end).replace('.', '', 1) + '.txt')
-        so4gp.write_file(wr_text, f_name, wr=False)
+        so4gp.write_file(wr_text, f_name, wr=True)
         print(wr_text)
     elif algChoice == 'acograd':
         # ACO-GRAANK
