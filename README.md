@@ -58,6 +58,10 @@ Pattern : Support
 
 * MIT
 
+### Experimental Study
+
+This algorithm was tested on several real-life data sets and its performance analyzed. The analysis of its performance is available through this [link](https://github.com/owuordickson/meso-hpc-lr/tree/master/results/clugp).
+
 ### References
 
 * Owuor, D.O., Runkler, T., Laurent, A. et al. Ant colony optimization for mining gradual patterns. Int. J. Mach. Learn. & Cyber. (2021). https://doi.org/10.1007/s13042-021-01390-w
