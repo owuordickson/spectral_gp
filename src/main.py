@@ -91,14 +91,14 @@ if __name__ == "__main__":
 
     import time
     from memory_profiler import memory_usage
-    from pkg_algorithms import aco_grad, graank, clu_grad
+    from pkg_algorithms import aco_grad, graank, clu_grad, clu_grad_v6
 
     if algChoice == 'clugrad':
         # CLU-GRAD
         start = time.time()
-        res_text, gps = clu_grad.execute(filePath, minSup, eProb, itMax, numCores)
+        res_text, gps = clu_grad_v6.execute(filePath, minSup, eProb, itMax, numCores)
         end = time.time()
-        mem_usage = memory_usage((clu_grad.execute, (filePath, minSup, eProb, itMax, numCores)), interval=10)
+        mem_usage = memory_usage((clu_grad_v6.execute, (filePath, minSup, eProb, itMax, numCores)), interval=10)
         res_compare = compare_gps(filePath, minSup, gps)
 
         wr_text = ("Run-time: " + str(end - start) + " seconds\n")
@@ -106,7 +106,7 @@ if __name__ == "__main__":
         wr_text += str(res_text)
         wr_text += str(res_compare)
         f_name = str('res_clu' + str(end).replace('.', '', 1) + '.txt')
-        so4gp.write_file(wr_text, f_name, wr=True)
+        so4gp.write_file(wr_text, f_name, wr=False)
         print(wr_text)
     elif algChoice == 'acograd':
         # ACO-GRAANK

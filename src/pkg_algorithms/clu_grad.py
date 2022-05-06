@@ -70,6 +70,7 @@ def clugps(f_path, min_sup=MIN_SUPPORT, e_probability=ERASURE_PROBABILITY,
     # 3d. Clustering using K-Means
     kmeans = KMeans(n_clusters=r, random_state=0)
     y_pred = kmeans.fit_predict(s_matrix_approx)
+    # print(y_pred)
 
     # 4. Infer GPs
     str_gps, gps = infer_gps(y_pred, d_gp, mat_obj, sv_max_iter)
