@@ -91,14 +91,14 @@ if __name__ == "__main__":
 
     import time
     from memory_profiler import memory_usage
-    from pkg_algorithms import aco_grad, graank, clu_grad, clu_grad_v5
+    from pkg_algorithms import aco_grad, graank, clu_grad
 
     if algChoice == 'clugrad':
         # CLU-GRAD
         start = time.time()
-        res_text, gps = clu_grad_v5.execute(filePath, minSup, eProb, itMax, numCores)
+        res_text, gps = clu_grad.execute(filePath, minSup, eProb, itMax, numCores)
         end = time.time()
-        mem_usage = memory_usage((clu_grad_v5.execute, (filePath, minSup, eProb, itMax, numCores)))
+        mem_usage = memory_usage((clu_grad.execute, (filePath, minSup, eProb, itMax, numCores)))
         res_compare = compare_gps(filePath, minSup, gps)
 
         wr_text = ("Run-time: " + str(end - start) + " seconds\n")
