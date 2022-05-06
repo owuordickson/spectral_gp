@@ -39,7 +39,7 @@ import math
 import faiss
 import numpy as np
 from ypstruct import structure
-from sklearn.cluster import KMeans
+# from sklearn.cluster import KMeans, AgglomerativeClustering
 
 import so4gp as sgp
 
@@ -72,6 +72,8 @@ def clugps(f_path, min_sup=MIN_SUPPORT, e_probability=ERASURE_PROBABILITY,
     # 3d. Clustering using K-Means (using sklearn library)
     # kmeans = KMeans(n_clusters=r, random_state=0)
     # y_pred = kmeans.fit_predict(s_matrix_approx)
+    # ac = AgglomerativeClustering(n_clusters=r, affinity="euclidean")
+    # y_pred = ac.fit_predict(s_matrix_approx)
 
     # 3d. Clustering using K-Means (using faiss library)
     kmeans = faiss.Kmeans(d=s_matrix_approx.shape[1], k=int(r))
