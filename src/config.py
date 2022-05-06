@@ -23,9 +23,9 @@ DATASET = '../data/air_quality1k.csv'
 
 # ACO-GRAD Configurations:
 EVAPORATION_FACTOR = 0.5
-MAX_ITERATIONS = 100
+MAX_ITERATIONS = 500
 
 # Clustering Configurations
 CLUSTER_ALGORITHM = 'kmeans'  # selects algorithm to be used for clustering the net-win matrices
-ERASURE_PROBABILITY = 0.75  # determines the number of pairs to be ignored
+ERASURE_PROBABILITY = 0.9  # determines the number of pairs to be ignored
 SCORE_VECTOR_ITERATIONS = 2  # maximum iteration for score vector estimation
