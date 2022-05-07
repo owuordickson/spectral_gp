@@ -38,7 +38,7 @@ import math
 
 import numpy as np
 from ypstruct import structure
-# from sklearn.cluster import KMeans, AgglomerativeClustering
+# from sklearn.cluster import KMeans
 import faiss
 # import genieclust
 
@@ -76,8 +76,7 @@ def clugps(f_path, min_sup=MIN_SUPPORT, e_probability=ERASURE_PROBABILITY,
     # 3d. Clustering using K-Means (using sklearn library)
     # kmeans = KMeans(n_clusters=r, random_state=0)
     # y_pred = kmeans.fit_predict(s_matrix_approx)
-    # ac = AgglomerativeClustering(n_clusters=r, affinity="euclidean")
-    # y_pred = ac.fit_predict(s_matrix_approx)
+    # y_pred = kmeans.fit_predict(s_matrix_approx)
 
     # 3d. Clustering using K-Means (using faiss library)
     kmeans = faiss.Kmeans(d=s_matrix_approx.shape[1], k=int(r))
@@ -85,10 +84,6 @@ def clugps(f_path, min_sup=MIN_SUPPORT, e_probability=ERASURE_PROBABILITY,
     y_pred = kmeans.index.search(s_matrix_approx.astype(np.float32), 1)[1]
     y_pred = np.ravel(y_pred)
 
-    # 3d. Clustering using K-Means (using genieclust library)
-    # g = genieclust.Genie(n_clusters=r)
-    # y_pred = g.fit_predict(s_matrix_approx)
-    # print(y_pred)
     end = time.time()  # TO BE REMOVED
 
     # 4. Infer GPs
