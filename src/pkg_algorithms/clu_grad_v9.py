@@ -145,20 +145,20 @@ def construct_matrices(d_gp, e):
         s_vec = np.zeros((n,), dtype=np.int32)  # S-vector
         temp_vec = np.zeros((n,), dtype=np.int32)
         for w in [1, -1]:
-            temp_locs = np.flatnonzero(temp_cum_wins == w)
-            # ij, counts = np.unique(pair_ij[temp_locs, 0], return_counts=True)
-            temp_vec[pair_ij[temp_locs, 0]] += w  # i/j wins
-            temp_vec[pair_ij[temp_locs, 1]] += -w  # j/i loses
-            print(str(pair_ij[temp_locs, 0]) + ', ' + str(pair_ij[temp_locs, 1]))
+            positions = np.flatnonzero(temp_cum_wins == w)
+            # ij, counts = np.unique(pair_ij[positions, 0], return_counts=True)
+            temp_vec[pair_ij[positions, 0]] += w  # i/j wins
+            temp_vec[pair_ij[positions, 1]] += -w  # j/i loses
+            print(str(pair_ij[positions, 0]) + ', ' + str(pair_ij[positions, 1]))
 
-        # temp_locs = np.flatnonzero(temp_cum_wins == 1)
-        # ij, counts = np.unique(pair_ij[temp_locs, 0], return_counts=True)
-        # temp_vec[pair_ij[temp_locs, 0]] += 1  # i wins
-        # temp_vec[pair_ij[temp_locs, 1]] += -1  # j loses
-        # temp_locs = np.flatnonzero(temp_cum_wins == -1)
-        # temp_vec[pair_ij[temp_locs, 0]] += -1  # i loses
-        # temp_vec[pair_ij[temp_locs, 1]] += 1  # j wins
-        # print(str(pair_ij[temp_locs, 0]) + ', ' + str(pair_ij[temp_locs, 1]))
+        # positions = np.flatnonzero(temp_cum_wins == 1)
+        # ij, counts = np.unique(pair_ij[positions, 0], return_counts=True)
+        # temp_vec[pair_ij[positions, 0]] += 1  # i wins
+        # temp_vec[pair_ij[positions, 1]] += -1  # j loses
+        # positions = np.flatnonzero(temp_cum_wins == -1)
+        # temp_vec[pair_ij[positions, 0]] += -1  # i loses
+        # temp_vec[pair_ij[positions, 1]] += 1  # j wins
+        # print(str(pair_ij[positions, 0]) + ', ' + str(pair_ij[positions, 1]))
         print(col_data[pair_ij[:, 0]])
         print(col_data[pair_ij[:, 1]])
 
