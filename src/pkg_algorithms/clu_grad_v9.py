@@ -122,8 +122,7 @@ def construct_matrices(d_gp, e):
     pair_ij = np.reshape(rand_1d, (-1, 2))
     # Remove duplicates
     pair_ij = pair_ij[np.argwhere(pair_ij[:, 0] != pair_ij[:, 1])[:, 0]]
-    pair_ij = np.array([[0, 4], [3, 4], [2, 0], [4, 1], [2, 4], [1, 0]])  # For testing
-    pair_count = pair_ij.shape[0]
+    # pair_ij = np.array([[0, 4], [3, 4], [2, 0], [4, 1], [2, 4], [1, 0]])  # For testing
 
     # 2. Variable declarations
     attr_data = d_gp.data.T  # Feature data objects

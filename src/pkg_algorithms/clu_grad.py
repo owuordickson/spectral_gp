@@ -6,7 +6,7 @@
 
 @license: MIT
 
-@version: 0.1.8
+@version: 0.1.9
 
 @email: owuordickson@gmail.com
 
@@ -40,7 +40,6 @@ import numpy as np
 from ypstruct import structure
 from sklearn.cluster import KMeans
 # import faiss
-# import genieclust
 
 import so4gp as sgp
 import time  # TO BE REMOVED
@@ -75,7 +74,6 @@ def clugps(f_path, min_sup=MIN_SUPPORT, e_probability=ERASURE_PROBABILITY,
 
     # 3d. Clustering using K-Means (using sklearn library)
     kmeans = KMeans(n_clusters=r, random_state=0)
-    y_pred = kmeans.fit_predict(s_matrix_approx)
     y_pred = kmeans.fit_predict(s_matrix_approx)
 
     # 3d. Clustering using K-Means (using faiss library)
@@ -116,13 +114,14 @@ def construct_matrices(d_gp, e):
     n = d_gp.row_count
     prob = 1 - e  # Sample probability
 
-    # 1. Generate random pairs using erasure-probability
+    # 1a. Generate random pairs using erasure-probability
     total_pair_count = int(n * (n - 1) * 0.5)
     rand_1d = np.random.choice(n, int(prob*total_pair_count)*2, replace=True)
     pair_ij = np.reshape(rand_1d, (-1, 2))
-    # Remove duplicates
+
+    # 1b. Remove duplicates
     pair_ij = pair_ij[np.argwhere(pair_ij[:, 0] != pair_ij[:, 1])[:, 0]]
-    pair_count = pair_ij.shape[0]
+    # pair_ij = np.array([[0, 4], [3, 4], [2, 0], [4, 1], [2, 4], [1, 0]])  # For testing
 
     # 2. Variable declarations
     attr_data = d_gp.data.T  # Feature data objects
@@ -131,26 +130,23 @@ def construct_matrices(d_gp, e):
     cum_wins = []  # Cumulative wins
 
     # st = time.time()
-    # 4. Construct S matrix from data set
-    for col in d_gp.attr_cols:
+    # 3. Construct S matrix from data set
+    for col in np.nditer(d_gp.attr_cols):
+        # Feature data objects
         col_data = np.array(attr_data[col], dtype=np.float)  # Feature data objects
-        s_vec = np.zeros((n,), dtype=np.int32)  # S-vector
-        temp_cum_wins = np.zeros((pair_count, ), dtype=np.int32)  # Cumulative wins
 
-        for k in range(pair_count):
-            i = pair_ij[k][0]
-            j = pair_ij[k][1]
-            # print(str(i) + "," + str(j))
+        # Cumulative Wins: for estimation of score-vector
+        temp_cum_wins = np.where(col_data[pair_ij[:, 0]] < col_data[pair_ij[:, 1]], 1,
+                                 np.where(col_data[pair_ij[:, 0]] > col_data[pair_ij[:, 1]], -1, 0))
 
-            # Construct S-vector (net-win vector)
-            if col_data[i] < col_data[j]:
-                s_vec[i] += 1  # i wins
-                s_vec[j] += -1  # j loses
-                temp_cum_wins[k] = 1  # For estimation of score-vector
-            elif col_data[i] > col_data[j]:
-                s_vec[i] += -1  # i loses
-                s_vec[j] += 1  # j wins
-                temp_cum_wins[k] = -1  # For estimation of score-vector
+        # S-vector
+        s_vec = np.zeros((n,), dtype=np.int32)
+        for w in [1, -1]:
+            positions = np.flatnonzero(temp_cum_wins == w)
+            i, counts_i = np.unique(pair_ij[positions, 0], return_counts=True)
+            j, counts_j = np.unique(pair_ij[positions, 1], return_counts=True)
+            s_vec[i] += w * counts_i  # i wins/loses (1/-1)
+            s_vec[j] += -w * counts_j  # j loses/wins (1/-1)
 
         # Normalize S-vector
         if np.count_nonzero(s_vec) > 0:
@@ -273,7 +269,7 @@ def execute(f_path, min_supp, e_prob, max_iter, cores):
         out = clugps(f_path, min_supp, e_prob, max_iter, testing=True)
         list_gp = out.estimated_gps
 
-        wr_line = "Algorithm: Clu-GRAD (v1.8)\n"
+        wr_line = "Algorithm: Clu-GRAD (v1.9)\n"
         wr_line += "No. of (dataset) attributes: " + str(out.col_count) + '\n'
         wr_line += "No. of (dataset) tuples: " + str(out.row_count) + '\n'
         wr_line += "Erasure probability: " + str(out.e_prob) + '\n'
