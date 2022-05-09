@@ -142,49 +142,14 @@ def construct_matrices(d_gp, e):
                                  np.where(col_data[pair_ij[:, 0]] > col_data[pair_ij[:, 1]], -1, 0))
 
         # S-vector
-        s_vec = np.zeros((n,), dtype=np.int32)  # S-vector
-        temp_vec = np.zeros((n,), dtype=np.int32)
+        s_vec = np.zeros((n,), dtype=np.int32)
         for w in [1, -1]:
             positions = np.flatnonzero(temp_cum_wins == w)
-            # ij, counts = np.unique(pair_ij[positions, 0], return_counts=True)
-            temp_vec[pair_ij[positions, 0]] += w  # i/j wins
-            temp_vec[pair_ij[positions, 1]] += -w  # j/i loses
-            print(str(pair_ij[positions, 0]) + ', ' + str(pair_ij[positions, 1]))
+            i, counts_i = np.unique(pair_ij[positions, 0], return_counts=True)
+            j, counts_j = np.unique(pair_ij[positions, 1], return_counts=True)
+            s_vec[i] += w * counts_i  # i wins/loses (1/-1)
+            s_vec[j] += -w * counts_j  # j loses/wins (1/-1)
 
-        # positions = np.flatnonzero(temp_cum_wins == 1)
-        # ij, counts = np.unique(pair_ij[positions, 0], return_counts=True)
-        # temp_vec[pair_ij[positions, 0]] += 1  # i wins
-        # temp_vec[pair_ij[positions, 1]] += -1  # j loses
-        # positions = np.flatnonzero(temp_cum_wins == -1)
-        # temp_vec[pair_ij[positions, 0]] += -1  # i loses
-        # temp_vec[pair_ij[positions, 1]] += 1  # j wins
-        # print(str(pair_ij[positions, 0]) + ', ' + str(pair_ij[positions, 1]))
-        print(col_data[pair_ij[:, 0]])
-        print(col_data[pair_ij[:, 1]])
-
-        # TO BE REMOVED
-        for k in range(pair_count):
-            i = pair_ij[k][0]
-            j = pair_ij[k][1]
-            # print(str(i) + "," + str(j))
-            # Construct S-vector (net-win vector)
-            if col_data[i] < col_data[j]:
-                s_vec[i] += 1  # i wins
-                s_vec[j] += -1  # j loses
-                # temp_cum_wins[k] = 1  # For estimation of score-vector
-            elif col_data[i] > col_data[j]:
-                s_vec[i] += -1  # i loses
-                s_vec[j] += 1  # j wins
-                # temp_cum_wins[k] = -1  # For estimation of score-vector
-
-        print(temp_cum_wins)
-        # print("\n")
-        print("\n")
-
-        print(temp_vec)
-        print(s_vec)
-        # print(pair_ij)
-        print(" --- ")
         # Normalize S-vector
         if np.count_nonzero(s_vec) > 0:
             s_vec[s_vec > 0] = 1  # Normalize net wins
