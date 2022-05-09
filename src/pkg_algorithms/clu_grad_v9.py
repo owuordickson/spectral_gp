@@ -6,7 +6,7 @@
 
 @license: MIT
 
-@version: 0.1.8
+@version: 0.1.9
 
 @email: owuordickson@gmail.com
 
@@ -122,6 +122,7 @@ def construct_matrices(d_gp, e):
     pair_ij = np.reshape(rand_1d, (-1, 2))
     # Remove duplicates
     pair_ij = pair_ij[np.argwhere(pair_ij[:, 0] != pair_ij[:, 1])[:, 0]]
+    pair_ij = np.array([[0, 4], [3, 4], [2, 0], [4, 1], [2, 4], [1, 0]])  # For testing
     pair_count = pair_ij.shape[0]
 
     # 2. Variable declarations
@@ -130,12 +131,39 @@ def construct_matrices(d_gp, e):
     s_mat = []  # S-Matrix (made up of S-Vectors)
     cum_wins = []  # Cumulative wins
 
-    # st = time.time()
+    st = time.time()
     # 4. Construct S matrix from data set
-    for col in d_gp.attr_cols:
+    for col in np.nditer(d_gp.attr_cols):
+        # Feature data objects
         col_data = np.array(attr_data[col], dtype=np.float)  # Feature data objects
+
+        # Cumulative Wins: for estimation of score-vector
+        temp_cum_wins = np.where(col_data[pair_ij[:, 0]] < col_data[pair_ij[:, 1]], 1,
+                                 np.where(col_data[pair_ij[:, 0]] > col_data[pair_ij[:, 1]], -1, 0))
+
         s_vec = np.zeros((n,), dtype=np.int32)  # S-vector
-        temp_cum_wins = np.zeros((pair_count, ), dtype=np.int32)  # Cumulative wins
+        # S-vector
+        temp_vec = np.zeros((n,), dtype=np.int32)
+
+        for w in [1, -1]:
+            temp_locs = np.flatnonzero(temp_cum_wins == w)
+            # ij, counts = np.unique(pair_ij[temp_locs, 0], return_counts=True)
+            temp_vec[pair_ij[temp_locs, 0]] += w  # i/j wins
+            temp_vec[pair_ij[temp_locs, 1]] += -w  # j/i loses
+            print(str(pair_ij[temp_locs, 0]) + ', ' + str(pair_ij[temp_locs, 1]))
+
+        # temp_locs = np.flatnonzero(temp_cum_wins == 1)
+        # ij, counts = np.unique(pair_ij[temp_locs, 0], return_counts=True)
+        # temp_vec[pair_ij[temp_locs, 0]] += 1  # i wins
+        # temp_vec[pair_ij[temp_locs, 1]] += -1  # j loses
+
+        # temp_locs = np.flatnonzero(temp_cum_wins == -1)
+        # temp_vec[pair_ij[temp_locs, 0]] += -1  # i loses
+        # temp_vec[pair_ij[temp_locs, 1]] += 1  # j wins
+        # print(str(pair_ij[temp_locs, 0]) + ', ' + str(pair_ij[temp_locs, 1]))
+
+        print(col_data[pair_ij[:, 0]])
+        print(col_data[pair_ij[:, 1]])
 
         for k in range(pair_count):
             i = pair_ij[k][0]
@@ -146,12 +174,21 @@ def construct_matrices(d_gp, e):
             if col_data[i] < col_data[j]:
                 s_vec[i] += 1  # i wins
                 s_vec[j] += -1  # j loses
-                temp_cum_wins[k] = 1  # For estimation of score-vector
+                # temp_cum_wins[k] = 1  # For estimation of score-vector
             elif col_data[i] > col_data[j]:
                 s_vec[i] += -1  # i loses
                 s_vec[j] += 1  # j wins
-                temp_cum_wins[k] = -1  # For estimation of score-vector
+                # temp_cum_wins[k] = -1  # For estimation of score-vector
 
+        # print(temp_wins)
+        print(temp_cum_wins)
+        # print("\n")
+        print("\n")
+
+        print(temp_vec)
+        print(s_vec)
+        print(pair_ij)
+        print(" --- ")
         # Normalize S-vector
         if np.count_nonzero(s_vec) > 0:
             s_vec[s_vec > 0] = 1  # Normalize net wins
@@ -164,8 +201,8 @@ def construct_matrices(d_gp, e):
             lst_gis.append(sgp.GI(col, '-'))
             cum_wins.append(-temp_cum_wins)
             s_mat.append(-s_vec)
-    # end = time.time()
-    # print((end - st))
+    end = time.time()
+    print((end - st))
 
     res = structure()
     res.gradual_items = np.array(lst_gis)
@@ -273,7 +310,7 @@ def execute(f_path, min_supp, e_prob, max_iter, cores):
         out = clugps(f_path, min_supp, e_prob, max_iter, testing=True)
         list_gp = out.estimated_gps
 
-        wr_line = "Algorithm: Clu-GRAD (v1.8)\n"
+        wr_line = "Algorithm: Clu-GRAD (v1.9)\n"
         wr_line += "No. of (dataset) attributes: " + str(out.col_count) + '\n'
         wr_line += "No. of (dataset) tuples: " + str(out.row_count) + '\n'
         wr_line += "Erasure probability: " + str(out.e_prob) + '\n'
