@@ -141,10 +141,9 @@ def construct_matrices(d_gp, e):
         temp_cum_wins = np.where(col_data[pair_ij[:, 0]] < col_data[pair_ij[:, 1]], 1,
                                  np.where(col_data[pair_ij[:, 0]] > col_data[pair_ij[:, 1]], -1, 0))
 
-        s_vec = np.zeros((n,), dtype=np.int32)  # S-vector
         # S-vector
+        s_vec = np.zeros((n,), dtype=np.int32)  # S-vector
         temp_vec = np.zeros((n,), dtype=np.int32)
-
         for w in [1, -1]:
             temp_locs = np.flatnonzero(temp_cum_wins == w)
             # ij, counts = np.unique(pair_ij[temp_locs, 0], return_counts=True)
@@ -156,20 +155,18 @@ def construct_matrices(d_gp, e):
         # ij, counts = np.unique(pair_ij[temp_locs, 0], return_counts=True)
         # temp_vec[pair_ij[temp_locs, 0]] += 1  # i wins
         # temp_vec[pair_ij[temp_locs, 1]] += -1  # j loses
-
         # temp_locs = np.flatnonzero(temp_cum_wins == -1)
         # temp_vec[pair_ij[temp_locs, 0]] += -1  # i loses
         # temp_vec[pair_ij[temp_locs, 1]] += 1  # j wins
         # print(str(pair_ij[temp_locs, 0]) + ', ' + str(pair_ij[temp_locs, 1]))
-
         print(col_data[pair_ij[:, 0]])
         print(col_data[pair_ij[:, 1]])
 
+        # TO BE REMOVED
         for k in range(pair_count):
             i = pair_ij[k][0]
             j = pair_ij[k][1]
             # print(str(i) + "," + str(j))
-
             # Construct S-vector (net-win vector)
             if col_data[i] < col_data[j]:
                 s_vec[i] += 1  # i wins
@@ -180,14 +177,13 @@ def construct_matrices(d_gp, e):
                 s_vec[j] += 1  # j wins
                 # temp_cum_wins[k] = -1  # For estimation of score-vector
 
-        # print(temp_wins)
         print(temp_cum_wins)
         # print("\n")
         print("\n")
 
         print(temp_vec)
         print(s_vec)
-        print(pair_ij)
+        # print(pair_ij)
         print(" --- ")
         # Normalize S-vector
         if np.count_nonzero(s_vec) > 0:
