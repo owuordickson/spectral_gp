@@ -35,7 +35,6 @@ the same cluster should have almost similar score vector.
 """
 import json
 import math
-
 import numpy as np
 from ypstruct import structure
 from sklearn.cluster import KMeans
@@ -60,6 +59,8 @@ def clugps(f_path, min_sup=MIN_SUPPORT, e_probability=ERASURE_PROBABILITY,
     # e_prob = (0.5 if e_probability < 0.5 else e_probability)  # erasure-probability has to be 0.5 or greater
     mat_obj = construct_matrices(d_gp, e=e_probability)
     s_matrix = mat_obj.nwin_matrix  # Net-win matrix (S)
+    if s_matrix.size < 1:
+        raise Exception("Erasure probability is too high, consider reducing it.")
     # print(s_matrix)
 
     start = time.time()  # TO BE REMOVED
