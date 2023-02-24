@@ -6,7 +6,7 @@
 
 @license: MIT
 
-@version: 0.1.9
+@version: 0.2.0
 
 @email: owuordickson@gmail.com
 
@@ -37,20 +37,13 @@ import json
 import math
 import numpy as np
 from ypstruct import structure
-from sklearn.cluster import KMeans
-# import faiss
+from sklearn.cluster import KMeans, SpectralClustering, AgglomerativeClustering, Birch, DBSCAN
 
 import so4gp as sgp
 import time  # TO BE REMOVED
 
-# Clustering Configurations
-MIN_SUPPORT = 0.5
-ERASURE_PROBABILITY = 0.5  # determines the number of pairs to be ignored
-SCORE_VECTOR_ITERATIONS = 10  # maximum iteration for score vector estimation
 
-
-def clugps(f_path, min_sup=MIN_SUPPORT, e_probability=ERASURE_PROBABILITY,
-           sv_max_iter=SCORE_VECTOR_ITERATIONS, return_gps=False, testing=False):
+def clugps(f_path, min_sup, e_probability, sv_max_iter, algorithm, return_gps=False, dev=False):
     # 1. Create a DataGP object
     d_gp = sgp.DataGP(f_path, min_sup)
     """:type d_gp: DataGP"""
@@ -74,8 +67,22 @@ def clugps(f_path, min_sup=MIN_SUPPORT, e_probability=ERASURE_PROBABILITY,
     s_matrix_approx = u[:, :r] @ np.diag(s[:r]) @ vt[:r, :]
 
     # 3d. Clustering using K-Means (using sklearn library)
-    kmeans = KMeans(n_clusters=r, random_state=0)
-    y_pred = kmeans.fit_predict(s_matrix_approx)
+    if algorithm == "agglo":
+        agglo = AgglomerativeClustering(n_clusters=r)
+        y_pred = agglo.fit_predict(s_matrix_approx)
+    elif algorithm == "spectral":
+        sc = SpectralClustering(n_clusters=r)
+        y_pred = sc.fit_predict(s_matrix_approx)
+    elif algorithm == "dbscan":
+        dbscan = DBSCAN()
+        y_pred = dbscan.fit_predict(s_matrix_approx)
+    elif algorithm == "birch":
+        birch = Birch(n_clusters=r)
+        y_pred = birch.fit_predict(s_matrix_approx)
+    else:
+        # kmeans (default)
+        kmeans = KMeans(n_clusters=r, random_state=0)
+        y_pred = kmeans.fit_predict(s_matrix_approx)
 
     # 3d. Clustering using K-Means (using faiss library)
     # kmeans = faiss.Kmeans(d=s_matrix_approx.shape[1], k=int(r))
@@ -86,7 +93,7 @@ def clugps(f_path, min_sup=MIN_SUPPORT, e_probability=ERASURE_PROBABILITY,
     end = time.time()  # TO BE REMOVED
 
     # 4. Infer GPs
-    str_gps, gps = infer_gps(y_pred, d_gp, mat_obj, sv_max_iter)
+    str_gps, gps = infer_gps(y_pred, d_gp, mat_obj, sv_max_iter, dev)
     # print(str_gps)
 
     # 5. Output - DO NOT ADD TO PyPi Package
@@ -98,7 +105,7 @@ def clugps(f_path, min_sup=MIN_SUPPORT, e_probability=ERASURE_PROBABILITY,
     out.row_count = d_gp.row_count
     out.e_prob = e_probability
     out.cluster_time = (end - start)  # TO BE REMOVED
-    if testing:
+    if dev:
         return out
 
     # Output
@@ -176,7 +183,7 @@ def construct_matrices(d_gp, e):
     return res
 
 
-def infer_gps(clusters, d_gp, mat_obj, max_iter):
+def infer_gps(clusters, d_gp, mat_obj, max_iter, in_dev):
 
     patterns = []
     str_patterns = []
@@ -205,14 +212,22 @@ def infer_gps(clusters, d_gp, mat_obj, max_iter):
             est_sup = estimate_support(n, score_vectors)
 
             # 4. Infer GPs from the clusters
-            if est_sup >= d_gp.thd_supp:
-                gp = sgp.GP()
+            if in_dev:
+                gp = sgp.ExtGP()
                 for gi in cluster_gis:
                     gp.add_gradual_item(gi)
                 gp.set_support(est_sup)
                 patterns.append(gp)
                 str_patterns.append(gp.print(d_gp.titles))
-                # print(gp.print(d_gp.titles))
+            else:
+                if est_sup >= d_gp.thd_supp:
+                    gp = sgp.ExtGP()
+                    for gi in cluster_gis:
+                        gp.add_gradual_item(gi)
+                    gp.set_support(est_sup)
+                    patterns.append(gp)
+                    str_patterns.append(gp.print(d_gp.titles))
+                    # print(gp.print(d_gp.titles))
     return str_patterns, patterns
 
 
@@ -260,26 +275,26 @@ def estimate_support(n, score_vectors):
 
 
 # DO NOT ADD TO PyPi Package
-def execute(f_path, min_supp, e_prob, max_iter, cores):
+def execute(f_path, min_supp, e_prob, max_iter, algorithm, cores):
     try:
         if cores > 1:
             num_cores = cores
         else:
             num_cores = sgp.get_num_cores()
 
-        out = clugps(f_path, min_supp, e_prob, max_iter, testing=True)
+        out = clugps(f_path, min_supp, e_prob, max_iter, algorithm, dev=True)
         list_gp = out.estimated_gps
 
-        wr_line = "Algorithm: Clu-GRAD (v1.9)\n"
+        wr_line = "Algorithm: Clu-GRAD (v2.0)\n"
         wr_line += "No. of (dataset) attributes: " + str(out.col_count) + '\n'
         wr_line += "No. of (dataset) tuples: " + str(out.row_count) + '\n'
         wr_line += "Erasure probability: " + str(out.e_prob) + '\n'
         wr_line += "Score vector iterations: " + str(max_iter) + '\n'
-
         wr_line += "Minimum support: " + str(min_supp) + '\n'
         wr_line += "Number of cores: " + str(num_cores) + '\n'
         wr_line += "Number of patterns: " + str(len(list_gp)) + '\n'
         wr_line += "Cluster time: " + str(out.cluster_time) + '\n'
+        wr_line += "Clustering Algorithm: " + str(algorithm) + '\n'
 
         for txt in out.titles:
             try:
