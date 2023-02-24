@@ -28,8 +28,8 @@ problem of extracting gradual patterns (GPs). In order to mine for GPs, each fea
 to construct a bitmap matrix comparing each row to each other (i.e., (r1,r2), (r1,r3), (r1,r4), (r2,r3), (r2,r4),
 (r3,r4)).
 
-In this approach, we convert the bitmap matrices into 'net-win matrices'. Finally, we apply spectral clustering to
-determine which gradual items belong to the same group based on the similarity of gradual dependency. Gradual items in
+In this approach, we convert the bitmap matrices into 'net-win vectors'. Finally, we apply spectral clustering to
+determine which gradual items belong to the same group based on the similarity of net-win vectors. Gradual items in
 the same cluster should have almost similar score vector.
 
 """
