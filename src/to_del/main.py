@@ -98,7 +98,8 @@ if __name__ == "__main__":
 
     import time
     from memory_profiler import memory_usage
-    from pkg_algorithms import aco_grad, graank, clu_grad
+    from pkg_algorithms import aco_grad, graank
+    from src.to_del import clu_grad
 
     if algChoice == 'clugrad':
         # CLU-GRAD

@@ -1,5 +1,5 @@
 from src.pkg_algorithms import clu_grad_v2 as cgp
-from src import config as cfg
+from src.to_del import config as cfg
 import so4gp as sgp
 
 
