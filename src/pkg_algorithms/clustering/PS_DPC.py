@@ -1,26 +1,40 @@
-import math
 import sys
-
-from sklearn import preprocessing
-
 import numpy as np
-from tools.PrintFigures import PrintFigures  # 绘图操作类
-from tools.FileOperator import FileOperator  # 文件操作类
-from tools.FileOperatoruci import FileOperatoruci
 from sklearn.metrics import normalized_mutual_info_score, fowlkes_mallows_score, adjusted_rand_score
-import time
 sys.path.append("../..")
+
+
+def readSeed(filename):
+    data = []
+    data_label = []
+    with open(filename, "r") as f:
+        while True:
+            line = f.readline()
+            m = 0
+            data_tmp = []
+            if not line:
+                break
+            for i in line.split(','):
+                if (m == 7):
+                    data_label.append(int(i) - 1)
+                else:
+                    data_tmp.append(float(i))
+                m = m + 1
+            data.append(data_tmp)
+    data = np.array(data)
+    data_label = np.array(data_label)
+    return data, data_label
+
 
 class PS_DPC:
     MAX = 1000000
-    fo = FileOperatoruci()
-    pf = PrintFigures()
+    # pf = PrintFigures()
 
     # 1 main function of CFSFDP
     neigh = None
 
     def __init__(self):
-        self.data, self.label = self.fo.readIris("../../dataset/Iris.data")
+        self.data, self.label = readSeed('../../../data/seeds_dataset.txt')
         self.size,self.dim = self.data.shape
         self.neigh = np.zeros(self.size)
         self.dc = 0
@@ -36,18 +50,16 @@ class PS_DPC:
         self.dc = sortedll[position]  # Get the minimum distance of the neighbor as the cutoff distance（找到截止距离，计算方法就是在距离列表里n*(n-1)/2*0.5/100的位置的距离）
         rho = self.getlocalDensity(dis)
         delta = self.computDelta(rho, dis)
-        centers = self.identifyCenters(rho, delta)
+        # centers = self.identifyCenters(rho, delta)
         cores = []
-        for i in range(self.size):
-            if centers[i] != 0:
-                cores.append(i)
-        result = self.assignDataPoint(dis, rho, centers)
+        # for i in range(self.size):
+        #    if centers[i] != 0:
+        #        cores.append(i)
+        # result = self.assignDataPoint(dis, rho, centers)
         fmi = lambda x, y: fowlkes_mallows_score(x, y)
         nmi = lambda x, y: normalized_mutual_info_score(x, y)
         ari = lambda x, y: adjusted_rand_score(x, y)
-        print("%.3f,%.3f,%.3f" % (nmi(self.label, result), ari(self.label, result), fmi(self.label, result)))
-
-
+        # print("%.3f,%.3f,%.3f" % (nmi(self.label, result), ari(self.label, result), fmi(self.label, result)))
 
     def Get_distance(self, points):
         dis = np.zeros((self.size, self.size))
@@ -90,10 +102,10 @@ class PS_DPC:
         return delta
 
     # 6 identify cluster centers
-    def identifyCenters(self, rho, delta):
-        self.pf.printRhoDelta(rho,delta)
+    # def identifyCenters(self, rho, delta):
+    #    self.pf.printRhoDelta(rho,delta)
         # self.fo.writeData(centers, self.fileurl + 'centers.csv')
-        return centers
+    #    return centers
 
         # 7 assign the remaining points to the corresponding cluster center
 

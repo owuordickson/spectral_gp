@@ -1,26 +1,40 @@
 import numpy as np
-# import random
-# import matplotlib.pyplot as plt
-from sklearn.metrics import fowlkes_mallows_score, normalized_mutual_info_score, adjusted_rand_score, rand_score
-# import pandas as pd
-# import time
-# from sklearn import preprocessing
-from sklearn.metrics import fowlkes_mallows_score, normalized_mutual_info_score, adjusted_rand_score
+from sklearn.metrics import rand_score
+from sklearn.metrics import fowlkes_mallows_score, normalized_mutual_info_score
 import sys
 import math
 sys.path.append("../..")
-# from tools.FileOperator import FileOperator  # 文件操作类
-from tools.FileOperatoruci import FileOperatoruci
-from tools.PrintFigures import PrintFigures
+
+
+def readSeed(filename):
+    data = []
+    data_label = []
+    with open(filename, "r") as f:
+        while True:
+            line = f.readline()
+            m = 0
+            data_tmp = []
+            if not line:
+                break
+            for i in line.split(','):
+                if (m == 7):
+                    data_label.append(int(i) - 1)
+                else:
+                    data_tmp.append(float(i))
+                m = m + 1
+            data.append(data_tmp)
+    data = np.array(data)
+    data_label = np.array(data_label)
+    return data, data_label
 
 
 class RL_FCM:
     def __init__(self):
         self.Eps = 10**(-3)
-        self.pf = PrintFigures()
-        self.fouci = FileOperatoruci()
+        # self.pf = PrintFigures()
+        # self.fouci = FileOperatoruci()
         # self.data,self.label = self.fouci.readIris("../data/iris.data")
-        self.data, self.label = self.fouci.readSeed('../../../data/seeds_dataset.txt')
+        self.data, self.label = readSeed('../../../data/seeds_dataset.txt')
         self.size,self.dim = self.data.shape
         self.c = self.size#初始聚类数为全部
 
@@ -82,14 +96,12 @@ class RL_FCM:
             V.append(current_center)
         return A,r1,r2,r3,V
 
-
     def calculate_D(self,V,c):
         D = np.zeros((self.size,c))
         for i in range(self.size):
             for j in range(c):
                 D[i,j] = np.linalg.norm(self.data[i] - V[j])
         return D
-
 
     def calculate_U(self,A,V,r1,r2,c):
         U = []
