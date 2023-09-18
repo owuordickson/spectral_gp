@@ -36,14 +36,15 @@ class RL_FCM:
         # self.data,self.label = self.fouci.readIris("../data/iris.data")
         self.data, self.label = readSeed('../../../data/seeds_dataset.txt')
         self.size,self.dim = self.data.shape
-        self.c = self.size#初始聚类数为全部
+        self.c = self.size  # 初始聚类数为全部
 
-    def Run(self):
-        U,V = self.Iteration()
-        result = np.argmax(U,axis=1)
+    def runAlgorithm(self):
+        U, V = self.Iteration()
+        result = np.argmax(U, axis=1)
         fmi = lambda x, y: fowlkes_mallows_score(x, y)
         nmi = lambda x, y: normalized_mutual_info_score(x, y)
         ri = lambda x, y: rand_score(x, y)
+        print(result)
         print("%.3f,%.3f,%.3f" % (nmi(self.label, result), ri(self.label, result), fmi(self.label, result)))
 
     def Iteration(self):
@@ -54,7 +55,7 @@ class RL_FCM:
         flag = 0
         A_nor = A.copy()
         while True:
-            print(c_last,t)
+            # print(c_last,t)
             U = self.calculate_U(A_nor, V_last, r1, r2,c_last)
             # r1 = np.exp(-(t)/100)  # 更新r1
             # r2 = np.exp(-(t) / 1000)  # 更新r2(iris)
@@ -75,13 +76,13 @@ class RL_FCM:
             for i in range(c):
                 if np.linalg.norm(V[i] - V_last[i]) > max_dist:
                     max_dist = np.linalg.norm(V[i] - V_last[i])
-            print(V)
+            # print(V)
             if max_dist < self.Eps:
                 break
             V_last = V.copy()
             t += 1
             c_last = c
-        return U,V
+        return U, V
 
     def Initial(self):#初始化中心矩阵，概率矩阵等
         A = [1 / self.size for i in range(self.size)]
@@ -198,4 +199,4 @@ class RL_FCM:
 if __name__ == "__main__":
     np.set_printoptions(threshold=np.inf)
     rlfcm = RL_FCM()
-    rlfcm.Run()
+    rlfcm.runAlgorithm()

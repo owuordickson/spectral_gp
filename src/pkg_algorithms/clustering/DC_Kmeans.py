@@ -443,6 +443,7 @@ if __name__ == "__main__":
     # print('Canopy centers', centers)
 
     dckm = DC_KMeans(k, tol, max_rep, 'canopy', mycanopy.centroids)
+    # DC_KMeans(n_clusters=len(centers), tol=tol, max_iter=max_rep, init=np.array(centers)),
     dckm.fit(df)
     color = ['g', 'c', 'y']
     print(dckm.clusters)
