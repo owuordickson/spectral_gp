@@ -2,6 +2,8 @@ import configparser
 import sys
 from optparse import OptionParser
 from os import path
+import pathlib
+
 
 alg_names = {
             '1': 'clugrad',
@@ -20,8 +22,10 @@ clus_alg_names = {
 
 def load():
     # Load configuration from file
-    config = configparser.ConfigParser()
-    config.read('clugp.cfg')
+    config_file = pathlib.Path(__file__).parent.absolute() / "options.cfg"
+    config = configparser.SafeConfigParser()
+    config.read(config_file)
+    print(config.sections())
 
     # Dataset
     datadir = config.get('data', 'datadir')
