@@ -17,7 +17,7 @@ import time
 from memory_profiler import memory_usage
 from src.pkg_algorithms.clu_grad import ClusterGP
 from config_loader import load, alg_names, clus_alg_names
-from src.pkg_algorithms.so4gp_update import AntGRAANK, GRAANK, get_num_cores
+from src.pkg_algorithms.so4gp_update import AntGRAANK, GRAANK, get_num_cores, analyze_gps, write_file
 
 if __name__ == "__main__":
 
@@ -52,12 +52,13 @@ if __name__ == "__main__":
         start = time.time()
         res = alg.discover(algorithm=clusterAlg)
         duration = time.time() - start
-        # mem_use = memory_usage((clu_grad.execute, (filePath, minSup, eProb, itMax, clusterAlg, numCores)), interval=10)
+        mem_use = memory_usage((alg.discover, (clusterAlg,)), interval=10)
+        # mem_use=memory_usage((clu_grad.execute, (filePath, minSup, eProb, itMax, clusterAlg, numCores)), interval=10)
 
         json_res = json.loads(res)
         list_gp = alg.gradual_patterns
         wr_line = ("Run-time: " + str(duration) + " seconds\n")
-        # wr_line += ("Memory Usage (MiB): " + str(mem_use) + " \n")
+        wr_line += ("Memory Usage (MiB): " + str(mem_use) + " \n")
 
         wr_line += str('Algorithm: %s' % json_res['Algorithm']) + "\n"
         wr_line += "No. of (dataset) attributes: " + str(alg.col_count) + '\n'
@@ -91,9 +92,11 @@ if __name__ == "__main__":
         for gp in list_gp:
             wr_line += (str(gp.to_string()) + ' : ' + str(round(gp.support, 3)) + '\n')
 
-        # f_name = str('res_aco' + str(end).replace('.', '', 1) + '.txt')
-        # write_file(wr_line, f_name, wr=True)
-        print(wr_line)
+        res_compare = analyze_gps(filePath, minSup, alg.gradual_patterns)
+        wr_line += str(res_compare)
+        f_name = str('res_' + str(alg_name) + str(start).replace('.', '', 1) + '.txt')
+        write_file(wr_line, f_name, wr=True)
+        # print(wr_line)
 
     except ArithmeticError as error:
         wr_line = "Failed: " + str(error)

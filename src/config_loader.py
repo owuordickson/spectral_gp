@@ -11,10 +11,10 @@ alg_names = {
 
 
 clus_alg_names = {
-            '1': 'Standard-KMeans',
-            '2': 'Parallel Delayed Cluster DP-Means (improved KMeans)',
-            '3': 'Fuzzy C-Means',
-            '4': 'Persistable Clustering (density-based clustering algorithm)'
+            '1': 'Standard KMeans',
+            '2': 'PDC DP-Means',    # improved KMeans
+            '3': 'Fuzzy CMeans',
+            '4': 'PC'  # density-based clustering
 }
 
 

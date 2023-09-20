@@ -438,7 +438,7 @@ class ClusterGP(DataGP):
             # 4: Persistable Clustering (density-based clustering algorithm)
             p = persistable.Persistable(s_matrix_approx)
             y_predicted = p.quick_cluster()
-        print(y_predicted)
+        # print(y_predicted)
 
         end = time.time()  # TO BE REMOVED
 

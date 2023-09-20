@@ -1,0 +1,41 @@
+Run-time: 0.20796418190002441 seconds
+Memory Usage (MiB): [125.36328125, 122.13671875, 122.19921875, 122.22265625, 122.23828125, 122.23828125, 122.23828125, 122.23828125, 122.23828125, 122.23828125, 122.23828125, 122.23828125, 122.28125, 122.28125, 122.28125] 
+Algorithm: Clu-GRAANK
+No. of (dataset) attributes: 10
+No. of (dataset) objects: 116
+Erasure probability: 0.9
+Score vector iterations: 2
+Clustering Algorithm: Standard KMeans
+Minimum support: 0.1
+Number of cores: 8
+Number of patterns: 7
+0. Age
+1. BMI
+2. Glucose
+3. Insulin
+4. HOMA
+5. Leptin
+6. Adiponectin
+7. Resistin
+8. MCP.1
+9. Classification
+
+File: ../data/breast_cancer.csv
+
+Pattern : Support
+['1-', '5-'] : 0.648
+['1+', '5+'] : 0.673
+['2+', '9+'] : 0.475
+['2-', '3-', '4-'] : 0.592
+['6+', '7-', '8-', '9-'] : 0.219
+['3+', '4+'] : 0.866
+['6-', '7+'] : 0.537
+Gradual Pattern             Estimated Support    True Support  Percentage Error      Standard Deviation
+------------------------  -------------------  --------------  ------------------  --------------------
+['1-', '5-']                            0.648           0.732  11.475%                            0.059
+['1+', '5+']                            0.673           0.732  8.06%                              0.042
+['2+', '9+']                            0.475           0.376  26.33%                             0.07
+['2-', '3-', '4-']                      0.592           0.637  7.064%                             0.032
+['6+', '7-', '8-', '9-']                0.219           0.129  69.767%                            0.064
+['3+', '4+']                            0.866           0.94   7.872%                             0.052
+['6-', '7+']                            0.537           0.593  9.444%                             0.04
