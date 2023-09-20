@@ -2,19 +2,20 @@ import pandas as pd
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.metrics.pairwise import pairwise_distances
-from matplotlib import style
+# from matplotlib import style
 # from sklearn import preprocessing
 # from functools import reduce
 # import sys
 # from scipy.spatial.distance import euclidean
 import matplotlib.pyplot as plt
 # from random import randint
-style.use('ggplot')
+# style.use('ggplot')
 
 
 class MyCanopy(BaseEstimator, TransformerMixin):
     def __init__(self, remove_outliers=True):
         self.remove_outliers = remove_outliers
+        self.centroids = {}
 
     def calc_meanDist(self, data, dists=None):
         n = data.shape[0]
@@ -80,7 +81,6 @@ class MyCanopy(BaseEstimator, TransformerMixin):
             data = np.array(dt)
         else:
             raise Exception('dt should be a DataFrame or a numpy array')
-        self.centroids = {}
         centroids_dists = np.array([])
         p_centroid = np.array([])
 
@@ -167,7 +167,7 @@ class MyCanopy(BaseEstimator, TransformerMixin):
 
         c_remove = 0
         while data.shape[0] > 1:
-            print(data.shape, dists.shape)
+            # print(data.shape, dists.shape)
             w = np.array([])
             # p_new = np.array([])
             # a = np.array([])
@@ -249,8 +249,8 @@ class MyCanopy(BaseEstimator, TransformerMixin):
             # print(f'{4+ind} p',len(p), len(p_prev))
             # print(f'{4+ind} cdists', centroids_dists.shape)
 
-        print('Canopy found %d centers' % (len(self.centroids)))
-        print('Removed %d data points' % (c_remove))
+        # print('Canopy found %d centers' % (len(self.centroids)))
+        # print('Removed %d data points' % (c_remove))
 
 
 class DC_KMeans:
@@ -335,7 +335,7 @@ class DC_KMeans:
             """
             # a_num = a.select_dtypes(exclude='object')
             # a_cat = a.select_dtypes(include='object')
-            ## make the same size as a
+            # make the same size as a
             # b_num = b.select_dtypes(exclude='object')
             # b_cat = b.select_dtypes(include='object')
             # print(a)
@@ -362,7 +362,7 @@ class DC_KMeans:
             raise Exception('dt should be a DataFrame or a numpy array')
 
         if not len(self.centroids) == self.k:
-            print('No init centers', self.name)
+            # print('No init centers', self.name)
             # get random indexes from data
             self.init_centroids(data, self.init_type)
 
@@ -379,8 +379,7 @@ class DC_KMeans:
             for seed in self.centroids:
                 self.clusters[seed] = np.where(self.labels_ == seed)
                 if self.clusters[seed][0].size == 0:
-                    print("Cluster %s with centroid %s is empty!"
-                          % (seed, self.centroids[seed]))
+                    # print("Cluster %s with centroid %s is empty!" % (seed, self.centroids[seed]))
                     emptySeeds.append(seed)
                     emptyCluster = True
 
@@ -409,47 +408,13 @@ class DC_KMeans:
                     converge = converge and True
                 else:
                     converge = converge and False
-
             self.max_rep -= 1
-        print('Remaining repetitions: %s' % (self.max_rep))
-
+        # print('Remaining repetitions: %s' % (self.max_rep))
         self.inertia_ = 0
         for seed in self.centroids:
             self.inertia_ += np.array([self.find_mindist(data[self.clusters[seed]], seed) ** 2]).sum()
 
-
-if __name__ == "__main__":
-    k = 3
-    tol = 0.001
-    max_rep = 100
-    fuzzy_m = 2
-
-    # Data
-    data = np.array([[2, 3],
-                     [3, 5],
-                     [1, 4],
-                     [10, 12],
-                     [11, 13],
-                     [12, 10]])
-    # plt.scatter(data[:, 0], data[:, 1], s=100)
-    # plt.show()
-    df = pd.DataFrame(data)
-
-    # MyCanopy
-    remove_outliers = True
-    mycanopy = MyCanopy(remove_outliers=remove_outliers)
-    mycanopy.fit(df)
-    # centers = list(mycanopy.centroids.values())
-    # print('Canopy centers', centers)
-
-    dckm = DC_KMeans(k, tol, max_rep, 'canopy', mycanopy.centroids)
-    # DC_KMeans(n_clusters=len(centers), tol=tol, max_iter=max_rep, init=np.array(centers)),
-    dckm.fit(df)
-    color = ['g', 'c', 'y']
-    print(dckm.clusters)
-    for centroid in dckm.centroids:
-        plt.scatter(dckm.centroids[centroid][0], dckm.centroids[centroid][1], marker='o', color=color[centroid])
-        plt.scatter(data[dckm.clusters[centroid][0], 0], data[dckm.clusters[centroid][0], 1], marker='+',
-                    color=color[centroid])
-    plt.show()
-    # dckm.predict(pd.DataFrame([[1, 5]]))
+        cluster_data = np.zeros(dt.shape[0], dtype=int)
+        for k, v in self.clusters.items():
+            cluster_data[v] = int(k)
+        return cluster_data

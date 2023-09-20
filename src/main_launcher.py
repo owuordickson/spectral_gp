@@ -50,7 +50,7 @@ if __name__ == "__main__":
             num_cores = get_num_cores()
 
         start = time.time()
-        res = alg.discover()
+        res = alg.discover(algorithm=clusterAlg)
         duration = time.time() - start
         # mem_use = memory_usage((clu_grad.execute, (filePath, minSup, eProb, itMax, clusterAlg, numCores)), interval=10)
 

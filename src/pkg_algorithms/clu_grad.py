@@ -6,6 +6,9 @@ import numpy as np
 import json
 from ypstruct import structure
 from sklearn.cluster import KMeans
+from fcmeans import FCM
+from pdc_dp_means import DPMeans
+import persistable
 from .so4gp_update import DataGP, GI, ExtGP
 
 
@@ -383,7 +386,7 @@ class ClusterGP(DataGP):
         """:type est_sup: float"""
         return est_sup
 
-    def discover(self, dev=False):
+    def discover(self, algorithm=1, dev=False):
         """Description
 
         Applies spectral clustering to determine which gradual items belong to the same group based on the similarity
@@ -391,8 +394,9 @@ class ClusterGP(DataGP):
         are validated if their computed support is greater than or equal to the minimum support threshold specified by
         the user.
 
-        :param testing: [optional] returns different format if algorithm is used in a test environment
-        :type testing: bool
+        :param algorithm:
+        :param dev: [optional] returns different format if algorithm is used in a test environment
+        :type dev: bool
 
         :return: JSON object
         """
@@ -413,9 +417,28 @@ class ClusterGP(DataGP):
         # 2c. Spectral Clustering: rank approximation
         s_matrix_approx = u[:, :r] @ np.diag(s[:r]) @ vt[:r, :]
 
-        # 2d. Clustering using K-Means (using sklearn library)
-        kmeans = KMeans(n_clusters=r, random_state=0)
-        y_predicted = kmeans.fit_predict(s_matrix_approx)
+        # 2d. Clustering using K-Means
+        if algorithm == 1:
+            # 1: Standard-Kmeans
+            kmeans = KMeans(n_clusters=r, random_state=0)
+            y_predicted = kmeans.fit_predict(s_matrix_approx)
+        elif algorithm == 2:
+            # 2: Parallel Delayed Cluster DP-Means (improved KMeans)
+            dpmeans = DPMeans(n_clusters=r, n_init=10, delta=10)  # n_init and delta parameters
+            dpmeans.fit(s_matrix_approx)
+
+            # Predict the cluster for each data point
+            y_predicted = dpmeans.predict(s_matrix_approx)
+        elif algorithm == 3:
+            # 3: Fuzzy C-Means
+            fcm = FCM(n_clusters=r)
+            fcm.fit(s_matrix_approx)
+            y_predicted = fcm.predict(s_matrix_approx)
+        else:
+            # 4: Persistable Clustering (density-based clustering algorithm)
+            p = persistable.Persistable(s_matrix_approx)
+            y_predicted = p.quick_cluster()
+        print(y_predicted)
 
         end = time.time()  # TO BE REMOVED
 

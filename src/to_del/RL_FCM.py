@@ -1,51 +1,18 @@
 import numpy as np
-from sklearn.metrics import rand_score
-from sklearn.metrics import fowlkes_mallows_score, normalized_mutual_info_score
-import sys
 import math
-sys.path.append("../..")
-
-
-def readSeed(filename):
-    data = []
-    data_label = []
-    with open(filename, "r") as f:
-        while True:
-            line = f.readline()
-            m = 0
-            data_tmp = []
-            if not line:
-                break
-            for i in line.split(','):
-                if (m == 7):
-                    data_label.append(int(i) - 1)
-                else:
-                    data_tmp.append(float(i))
-                m = m + 1
-            data.append(data_tmp)
-    data = np.array(data)
-    data_label = np.array(data_label)
-    return data, data_label
 
 
 class RL_FCM:
-    def __init__(self):
+    def __init__(self, data):
         self.Eps = 10**(-3)
-        # self.pf = PrintFigures()
-        # self.fouci = FileOperatoruci()
-        # self.data,self.label = self.fouci.readIris("../data/iris.data")
-        self.data, self.label = readSeed('../../../data/seeds_dataset.txt')
-        self.size,self.dim = self.data.shape
-        self.c = self.size  # 初始聚类数为全部
+        self.data = data
+        self.size, self.dim = self.data.shape
+        # self.c = self.size  # Initial number of clusters
 
     def runAlgorithm(self):
         U, V = self.Iteration()
-        result = np.argmax(U, axis=1)
-        fmi = lambda x, y: fowlkes_mallows_score(x, y)
-        nmi = lambda x, y: normalized_mutual_info_score(x, y)
-        ri = lambda x, y: rand_score(x, y)
-        print(result)
-        print("%.3f,%.3f,%.3f" % (nmi(self.label, result), ri(self.label, result), fmi(self.label, result)))
+        clusters = np.argmax(U, axis=1)
+        return clusters
 
     def Iteration(self):
         A, r1, r2, r3, V_last = self.Initial()
@@ -194,9 +161,3 @@ class RL_FCM:
                     V[k][s] += U[i][k] * self.data[i][s]
                 V[k][s] = V[k][s] / V_fenmu
         return V
-
-
-if __name__ == "__main__":
-    np.set_printoptions(threshold=np.inf)
-    rlfcm = RL_FCM()
-    rlfcm.runAlgorithm()
