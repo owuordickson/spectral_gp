@@ -93,11 +93,11 @@ if __name__ == "__main__":
             wr_line += (str(gp.to_string()) + ' : ' + str(round(gp.support, 3)) + '\n')
 
         if alg_name == 'clugrad':
-            res_compare = analyze_gps(filePath, minSup, alg.gradual_patterns)
+            res_compare = analyze_gps(filePath, minSup, alg.gradual_patterns, dev=True)
             wr_line += str(res_compare)
         f_name = str('res_' + str(alg_name) + str(start).replace('.', '', 1) + '.txt')
         write_file(wr_line, f_name, wr=True)
-        # print(wr_line)
+        print(wr_line)
 
     except ArithmeticError as error:
         wr_line = "Failed: " + str(error)

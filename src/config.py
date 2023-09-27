@@ -28,5 +28,6 @@ MAX_ITERATIONS = 500
 
 # Clustering Configurations
 CLUSTER_ALGORITHM = 1  # 1: kmeans / 2: DPMeans / 3: FCM / 4: PC
-ERASURE_PROBABILITY = 0.9  # determines the number of pairs to be ignored
+ERASURE_PROBABILITY = 0.8  # determines the number of pairs to be ignored
 SCORE_VECTOR_ITERATIONS = 2  # maximum iteration for score vector estimation
+

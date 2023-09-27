@@ -25,7 +25,7 @@ def load():
     config_file = pathlib.Path(__file__).parent.absolute() / "options.cfg"
     config = configparser.SafeConfigParser()
     config.read(config_file)
-    print(config.sections())
+    # print(config.sections())
 
     # Dataset
     datadir = config.get('data', 'datadir')

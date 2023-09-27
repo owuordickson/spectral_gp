@@ -480,7 +480,7 @@ class DataGP:
 
 # -------- OTHER METHODS -----------
 
-def analyze_gps(data_src, min_sup, est_gps, approach='bfs'):
+def analyze_gps(data_src, min_sup, est_gps, approach='bfs', dev=False):
     """Description
 
     For each estimated GP, computes its true support using GRAANK approach and returns the statistics (% error,
@@ -529,6 +529,8 @@ def analyze_gps(data_src, min_sup, est_gps, approach='bfs'):
         d_set.fit_bitmap()
     headers = ["Gradual Pattern", "Estimated Support", "True Support", "Percentage Error", "Standard Deviation"]
     data = []
+    dev_out = "\n\nComparison : Estimated Support, True Support" + '\n'
+
     for est_gp in est_gps:
         est_sup = est_gp.support
         est_gp.set_support(0)
@@ -545,11 +547,21 @@ def analyze_gps(data_src, min_sup, est_gps, approach='bfs'):
             percentage_error = (abs(est_sup - true_sup) / true_sup) * 100
             st_dev = statistics.stdev([est_sup, true_sup])
 
+        if dev:
+            if len(true_gp.gradual_items) == len(est_gp.gradual_items):
+                dev_out += (str(est_gp.to_string()) + ' : ' + str(round(est_sup, 3)) + ', ' + str(
+                    round(true_sup, 3)) + '\n')
+            else:
+                dev_out += (str(est_gp.to_string()) + ' : ' + str(round(est_sup, 3)) + ', -1\n')
+
         if len(true_gp.gradual_items) == len(est_gp.gradual_items):
             data.append([est_gp.to_string(), round(est_sup, 3), round(true_sup, 3), str(round(percentage_error, 3))+'%',
                          round(st_dev, 3)])
         else:
             data.append([est_gp.to_string(), round(est_sup, 3), -1, np.inf, np.inf])
+
+    if dev:
+        return dev_out
     return tabulate(data, headers=headers)
 
 

@@ -1,13 +1,11 @@
 
 
-import time
 import math
 import numpy as np
 import json
-from ypstruct import structure
 from sklearn.cluster import KMeans
 from fcmeans import FCM
-from pdc_dp_means import DPMeans
+# from pdc_dp_means import DPMeans
 import persistable
 from .so4gp_update import DataGP, GI, ExtGP
 
@@ -110,15 +108,11 @@ class ClusterGP(DataGP):
             """:type cum_wins: np.ndarray"""
             """:type net_win_mat: np.ndarray"""
             """:type ij: np.ndarray"""
-            self.win_mat = np.array([])
-            """:type win_mat: np.ndarray"""
         else:
-            self.gradual_items, self.win_mat, self.cum_wins, self.net_win_mat, self.ij = self._construct_all_matrices()
+            self.gradual_items, self.cum_wins, self.net_win_mat, self.ij = self._construct_all_matrices()
             """:type gradual_items: np.ndarray"""
-            """:type win_mat: np.ndarray"""
             """:type cum_wins: np.ndarray"""
             """:type net_win_mat: np.ndarray"""
-            # """:type nodes_mat: np.ndarray"""
             """:type ij: np.ndarray"""
 
     def _construct_matrices(self, e):
@@ -159,7 +153,7 @@ class ClusterGP(DataGP):
         # 3. Construct S matrix from data set
         for col in np.nditer(self.attr_cols):
             # Feature data objects
-            col_data = np.array(attr_data[col], dtype=float)  # Feature data objects
+            col_data = np.array(attr_data[col], dtype=np.float64)  # Feature data objects
 
             # Cumulative Wins: for estimation of score-vector
             temp_cum_wins = np.where(col_data[pair_ij[:, 0]] < col_data[pair_ij[:, 1]], 1,
@@ -220,7 +214,7 @@ class ClusterGP(DataGP):
         # 3. Construct S matrix from data set
         for col in np.nditer(self.attr_cols):
             # Feature data objects
-            col_data = np.array(attr_data[col], dtype=float)  # Feature data objects
+            col_data = np.array(attr_data[col], dtype=np.float64)  # Feature data objects
 
             # Cumulative Wins: for estimation of score-vector
             temp_cum_wins = np.where(col_data[pair_ij[:, 0]] < col_data[pair_ij[:, 1]], 1,
@@ -236,35 +230,9 @@ class ClusterGP(DataGP):
                 s_vec[i] += w * counts_i  # i wins/loses (1/-1)
                 s_vec[j] += -w * counts_j  # j loses/wins (1/-1)
 
-                """
-                if w == 1:
-                    for node_i in i:
-                        nodes_j = j[np.where(j > node_i)]
-                        tmp = nodes_vec[node_i][0].union(set(nodes_j))
-                        nodes_vec[node_i] = [tmp, nodes_vec[node_i][1]]
-
-                    for node_j in j:
-                        nodes_i = i[np.where(i < node_j)]
-                        tmp = nodes_vec[node_j][1].union(set(nodes_i))
-                        nodes_vec[node_j] = [nodes_vec[node_j][0], tmp]
-                elif w == -1:
-                    for node_i in i:
-                        nodes_j = j[np.where(j > node_i)]
-                        tmp = nodes_vec[node_i][1].union(set(nodes_j))
-                        nodes_vec[node_i] = [nodes_vec[node_i][0], tmp]
-
-                    for node_j in j:
-                        nodes_i = i[np.where(i < node_j)]
-                        tmp = nodes_vec[node_j][0].union(set(nodes_i))
-                        nodes_vec[node_j] = [tmp, nodes_vec[node_j][1]]
-
-            # print('positions: ' + str(positions) + '; i: ' + str(i) + '; j: ' + str(j) + '; counts: ' + str(counts_i))
-            #    print(nodes_vec)
-            # print("\n")"""
-
             # Normalize S-vector
             if np.count_nonzero(s_vec) > 0:
-                w_mat.append(np.copy(s_vec))
+                # w_mat.append(np.copy(s_vec))
                 # nodes_mat.append(nodes_vec)
 
                 s_vec[s_vec > 0] = 1  # Normalize net wins
@@ -278,10 +246,9 @@ class ClusterGP(DataGP):
                 cum_wins.append(-temp_cum_wins)
                 s_mat.append(-s_vec)
 
-        # print(np.array(nodes_mat))
-        return np.array(lst_gis), np.array(w_mat), np.array(cum_wins), np.array(s_mat), pair_ij
+        return np.array(lst_gis), np.array(cum_wins), np.array(s_mat), pair_ij
 
-    def _infer_gps(self, clusters):
+    def _infer_gps(self, clusters, in_dev):
         """Description
 
         A function that infers GPs from clusters of gradual items.
@@ -315,13 +282,21 @@ class ClusterGP(DataGP):
                 est_sup = self._estimate_support(score_vectors)
 
                 # 4. Infer GPs from the clusters
-                if est_sup >= self.thd_supp:
+                if in_dev:
                     gp = ExtGP()
                     for gi in cluster_gis:
                         gp.add_gradual_item(gi)
                     gp.set_support(est_sup)
                     patterns.append(gp)
                     str_patterns.append(gp.print(self.titles))
+                else:
+                    if est_sup >= self.thd_supp:
+                        gp = ExtGP()
+                        for gi in cluster_gis:
+                            gp.add_gradual_item(gi)
+                        gp.set_support(est_sup)
+                        patterns.append(gp)
+                        str_patterns.append(gp.print(self.titles))
         return str_patterns, patterns
 
     def _estimate_score_vector(self, c_wins):
@@ -377,7 +352,7 @@ class ClusterGP(DataGP):
 
         # Estimate support - use different score-vectors to construct pairs
         n = self.row_count
-        bin_mat = np.ones((n, n), dtype=bool)
+        bin_mat = np.ones((n, n), dtype=np.bool8)
         for vec in score_vectors:
             temp_bin = vec < vec[:, np.newaxis]
             bin_mat = np.multiply(bin_mat, temp_bin)
@@ -386,7 +361,7 @@ class ClusterGP(DataGP):
         """:type est_sup: float"""
         return est_sup
 
-    def discover(self, algorithm=1, dev=False):
+    def discover(self, algorithm=1, dev=True):
         """Description
 
         Applies spectral clustering to determine which gradual items belong to the same group based on the similarity
@@ -407,7 +382,6 @@ class ClusterGP(DataGP):
             raise Exception("Erasure probability is too high, consider reducing it.")
         # print(s_matrix)
 
-        start = time.time()  # TO BE REMOVED
         # 2a. Spectral Clustering: perform SVD to determine the independent rows
         u, s, vt = np.linalg.svd(s_matrix)
 
@@ -424,11 +398,11 @@ class ClusterGP(DataGP):
             y_predicted = kmeans.fit_predict(s_matrix_approx)
         elif algorithm == 2:
             # 2: Parallel Delayed Cluster DP-Means (improved KMeans)
-            dpmeans = DPMeans(n_clusters=r, n_init=10, delta=10)  # n_init and delta parameters
-            dpmeans.fit(s_matrix_approx)
+            #dpmeans = DPMeans(n_clusters=r, n_init=10, delta=10)  # n_init and delta parameters
+            #dpmeans.fit(s_matrix_approx)
 
             # Predict the cluster for each data point
-            y_predicted = dpmeans.predict(s_matrix_approx)
+            y_predicted = []  # dpmeans.predict(s_matrix_approx)
         elif algorithm == 3:
             # 3: Fuzzy C-Means
             fcm = FCM(n_clusters=r)
@@ -440,22 +414,8 @@ class ClusterGP(DataGP):
             y_predicted = p.quick_cluster()
         # print(y_predicted)
 
-        end = time.time()  # TO BE REMOVED
-
         # 3. Infer GPs
-        str_gps, estimated_gps = self._infer_gps(y_predicted)
-
-        # 4. Output - DO NOT ADD TO PyPi Package
-        out = structure()
-        out.estimated_gps = estimated_gps
-        out.max_iteration = self.max_iteration
-        out.titles = self.titles
-        out.col_count = self.col_count
-        out.row_count = self.row_count
-        out.e_prob = self.erasure_probability
-        out.cluster_time = (end - start)  # TO BE REMOVED
-        if dev:
-            return out
+        str_gps, estimated_gps = self._infer_gps(y_predicted, dev)
 
         # Output
         out = json.dumps({"Algorithm": "Clu-GRAANK", "Patterns": str_gps, "Invalid Count": 0})
