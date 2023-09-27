@@ -398,8 +398,8 @@ class ClusterGP(DataGP):
             y_predicted = kmeans.fit_predict(s_matrix_approx)
         elif algorithm == 2:
             # 2: Parallel Delayed Cluster DP-Means (improved KMeans)
-            #dpmeans = DPMeans(n_clusters=r, n_init=10, delta=10)  # n_init and delta parameters
-            #dpmeans.fit(s_matrix_approx)
+            # dpmeans = DPMeans(n_clusters=r, n_init=10, delta=10)  # n_init and delta parameters
+            # dpmeans.fit(s_matrix_approx)
 
             # Predict the cluster for each data point
             y_predicted = []  # dpmeans.predict(s_matrix_approx)
