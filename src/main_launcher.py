@@ -52,7 +52,7 @@ if __name__ == "__main__":
         start = time.time()
         res = alg.discover(algorithm=clusterAlg)
         duration = time.time() - start
-        mem_use = memory_usage((alg.discover, (clusterAlg,)), interval=10)
+        mem_use = ""  # memory_usage((alg.discover, (clusterAlg,)), interval=10)
         # mem_use=memory_usage((clu_grad.execute, (filePath, minSup, eProb, itMax, clusterAlg, numCores)), interval=10)
 
         json_res = json.loads(res)
