@@ -67,7 +67,7 @@ if __name__ == "__main__":
         if alg_name == 'clugrad':
             wr_line += "Erasure probability: " + str(eProb) + '\n'
             wr_line += "Score vector iterations: " + str(itScoreMax) + '\n'
-            wr_line += "Clustering Algorithm: " + str(clus_alg_names.get(str(clusterAlg))) + '\n'
+            wr_line += "Clustering Algorithm: " + str(clus_alg_names.get(clusterAlg)) + '\n'
         elif alg_name == 'acograd':
             wr_line += "Evaporation factor: " + str(eVap) + '\n'
             wr_line += "Number of iterations: " + str(itMax) + '\n'

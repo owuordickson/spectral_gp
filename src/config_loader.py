@@ -13,10 +13,10 @@ alg_names = {
 
 
 clus_alg_names = {
-            '1': 'Standard KMeans',
-            '2': 'PDC DP-Means',    # improved KMeans
-            '3': 'Fuzzy CMeans',
-            '4': 'PC'  # density-based clustering
+            1: 'Standard KMeans',
+            2: 'PDC DP-Means',    # improved KMeans
+            3: 'Fuzzy CMeans',
+            4: 'PC'  # density-based clustering
 }
 
 
@@ -76,7 +76,7 @@ def load():
                          dest='clusterAlg',
                          help='select clustering algorithm',
                          default=clus_alg,
-                         type='string')
+                         type='int')
     optparser.add_option('-c', '--cores',
                          dest='numCores',
                          help='number of cores',
