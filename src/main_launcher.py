@@ -14,7 +14,7 @@ Description:
 
 import json
 import time
-from memory_profiler import memory_usage
+# from memory_profiler import memory_usage
 from pkg_algorithms.clu_grad import ClusterGP
 from config_loader import load, alg_names, clus_alg_names
 from pkg_algorithms.so4gp_update import AntGRAANK, GRAANK, get_num_cores, analyze_gps, write_file
