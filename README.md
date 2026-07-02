@@ -15,7 +15,7 @@ the same cluster should have almost similar score vector. Every gradual pattern 
 > ### REPOSITORY DEPRECATED
 > This project is no longer maintained here. The active development and updated code have moved.
 > 
-> 👉 **Get the updated code here:** [https://://github.com](https://github.com/owuordickson/gp-mining)
+> 👉 **Get the updated code here:** [github.com/owuordickson/gp-mining](https://github.com/owuordickson/gp-mining)
 
 
 ### Requirements:
