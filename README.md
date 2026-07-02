@@ -11,6 +11,12 @@ the same cluster should have almost similar score vector. Every gradual pattern 
 
 <!-- * Owuor, D.O., Runkler, T., Laurent, A. et al. Ant colony optimization for mining gradual patterns. Int. J. Mach. Learn. & Cyber. (2021). https://doi.org/10.1007/s13042-021-01390-w -->
 
+> [!WARNING]
+> ### REPOSITORY DEPRECATED
+> This project is no longer maintained here. The active development and updated code have moved.
+> 
+> 👉 **Get the updated code here:** [://github.com](https://://github.com)
+
 
 ### Requirements:
 
